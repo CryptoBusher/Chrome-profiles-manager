@@ -2,14 +2,15 @@ import re
 import questionary
 from loguru import logger
 
-from src.utils.helpers import get_profiles_list, get_comments_for_profiles
+from src.utils.helpers import get_users_list, get_comments_for_users, sort_users
 from src.client.menu.utils.helpers import custom_style
 
 
-def select_profiles() -> list[str] | None:
-    profiles_list_sorted = get_all_sorted_profiles()
-    if not profiles_list_sorted:
-        logger.error("⛔  Профили отсутствуют")
+def select_users(reverse: bool = False) -> list[str] | None:
+    profiles_list = get_users_list()
+
+    if not profiles_list:
+        logger.error("⛔  Юзеры отсутствуют")
         return
 
     select_options = [
@@ -21,7 +22,7 @@ def select_profiles() -> list[str] | None:
     ]
 
     select_method = questionary.select(
-        "Способ выбора профилей",
+        "Способ выбора юзеров",
         choices=select_options,
         style=custom_style
     ).ask()
@@ -31,20 +32,20 @@ def select_profiles() -> list[str] | None:
 
     selected_profiles = []
     if 'выбрать из списка' in select_method:
-        selected_profiles = paginate_profiles(profiles_list_sorted)
+        selected_profiles = paginate_profiles(profiles_list)
 
     elif 'вписать названия' in select_method:
         names_raw = questionary.text(
-            "Впиши названия профилей через запятую\n",
+            "Впиши названия юзеров через запятую или каждое с новой строки\n",
             style=custom_style
         ).ask()
 
         names = list(set(i.strip() for i in re.split(r'[\n,]+', names_raw) if i.strip()))
-        existing_profile_names = get_profiles_list()
-        names_to_skip = [name for name in names if name not in existing_profile_names]
+
+        names_to_skip = [name for name in names if name not in profiles_list]
 
         if names_to_skip:
-            logger.warning(f'⚠️ Пропускаем профили {names_to_skip}, профили не найдены')
+            logger.warning(f'⚠️ Пропускаем юзеров {names_to_skip}, юзеры не найдены')
 
         selected_profiles = [name for name in names if name not in names_to_skip]
 
@@ -54,8 +55,8 @@ def select_profiles() -> list[str] | None:
             style=custom_style
         ).ask()
 
-        for profile in profiles_list_sorted:
-            result = get_comments_for_profiles()
+        for profile in profiles_list:
+            result = get_comments_for_users()
             if result["success"]:
                 comments = result["comments"]
             else:
@@ -67,11 +68,15 @@ def select_profiles() -> list[str] | None:
                 selected_profiles.append(profile)
 
     elif 'выбрать все' in select_method:
-        selected_profiles = profiles_list_sorted
+        selected_profiles = profiles_list
 
     if not selected_profiles:
-        logger.warning("⚠️ Профили не выбраны")
+        logger.warning("⚠️ Юзеры не выбраны")
         return
+
+    selected_profiles = sort_users(selected_profiles)
+    if reverse:
+        selected_profiles = selected_profiles[::-1]
 
     return selected_profiles
 
@@ -87,7 +92,7 @@ def paginate_profiles(profiles, items_per_page=10):
         page_profiles = profiles[start:end]
 
         selected_profiles_on_page = questionary.checkbox(
-            f"Выбери профили для запуска (страница {current_page + 1} из {total_pages})",
+            f"Выбери юзеров для запуска (страница {current_page + 1} из {total_pages})",
             choices=page_profiles,
             style=custom_style,
         ).ask()
@@ -97,17 +102,3 @@ def paginate_profiles(profiles, items_per_page=10):
         current_page += 1
 
     return selected_profiles
-
-
-def get_all_sorted_profiles() -> list[str] | None:
-    profiles_list = get_profiles_list()
-    if not profiles_list:
-        return
-
-    numeric_profiles = [profile for profile in profiles_list if profile.isdigit()]
-    non_numeric_profiles = [profile for profile in profiles_list if not any(char.isdigit() for char in profile)]
-    numeric_profiles.sort(key=int)
-    non_numeric_profiles.sort()
-
-    profiles_list_sorted = numeric_profiles + non_numeric_profiles
-    return profiles_list_sorted

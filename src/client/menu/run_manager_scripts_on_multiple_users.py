@@ -4,12 +4,12 @@ import questionary
 from loguru import logger
 
 from src.manager.manager import Manager
-from .utils import select_profiles, custom_style
+from .utils import select_users, custom_style
 
 
-def run_manager_scripts_on_multiple_profiles():
-    selected_profiles = select_profiles()
-    if not selected_profiles:
+def run_manager_scripts_on_multiple_users():
+    selected_users = select_users()
+    if not selected_users:
         return
 
     manager = Manager()
@@ -43,8 +43,5 @@ def run_manager_scripts_on_multiple_profiles():
         if 'да' in shuffle_choice:
             shuffle(chosen_scripts)
 
-    for name in selected_profiles:
-        manager.run_scripts(
-            str(name),
-            chosen_scripts
-        )
+    for name in selected_users:
+        manager.run_scripts(str(name), chosen_scripts)

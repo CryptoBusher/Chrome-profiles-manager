@@ -9,25 +9,25 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from loguru import logger
 
-from .utils import js_click, close_all_other_tabs, get_txt_line_by_profile_name, is_twelve_words_string
+from .utils import js_click, close_all_other_tabs, get_txt_line_by_user_name, is_twelve_words_string
 
 
-def rabby_import(profile_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome):
+def rabby_import(user_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome):
     with open(os.path.join(script_data_path, 'config.json'), 'r', encoding="utf-8") as f:
         config = json.load(f)
 
     secrets_file_path = os.path.join(script_data_path, 'secrets.txt')
-    profile_data = get_txt_line_by_profile_name(profile_name, secrets_file_path)
-    if not profile_data:
+    user_data = get_txt_line_by_user_name(user_name, secrets_file_path)
+    if not user_data:
         raise Exception('приватный ключ или сид фраза не найдены')
-    _, secret, password = profile_data.split('|')
+    _, secret, password = user_data.split('|')
 
     is_seed_phrase = is_twelve_words_string(secret)
     working_tab = driver.current_window_handle
     wait = WebDriverWait(driver, 5)
 
     if config["run_delay_sec"]:
-        logger.debug(f"{profile_name} - waiting {config['run_delay_sec']} sec")
+        logger.debug(f"{user_name} - waiting {config['run_delay_sec']} sec")
         time.sleep(config["run_delay_sec"])
 
     close_all_other_tabs(driver, working_tab)

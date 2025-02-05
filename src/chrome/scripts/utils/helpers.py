@@ -35,14 +35,14 @@ def close_all_other_tabs(_driver: webdriver.Chrome, current_tab: str) -> None:
     _driver.switch_to.window(current_tab)
 
 
-def get_txt_line_by_profile_name(profile_name: str | int, file_path: str | Path) -> str | None:
+def get_txt_line_by_user_name(user_name: str | int, file_path: str | Path) -> str | None:
     with open(file_path, 'r') as f:
         data = [i.strip() for i in f.readlines()]
 
     selected_line = None
     for line in data:
-        name, profile_data = line.split('|', 1)
-        if name == str(profile_name):
+        name, user_data = line.split('|', 1)
+        if name == str(user_name):
             selected_line = line
             break
 

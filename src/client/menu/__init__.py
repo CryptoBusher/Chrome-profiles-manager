@@ -1,9 +1,10 @@
-from .create_multiple_profiles import create_multiple_profiles
-from .launch_multiple_profiles import launch_multiple_profiles
+from .create_multiple_users import create_multiple_users
+from .launch_multiple_users import launch_multiple_users
 from .manage_extensions import manage_extensions
-from .run_chrome_scripts_on_multiple_profiles import run_chrome_scripts_on_multiple_profiles
-from .run_manager_scripts_on_multiple_profiles import run_manager_scripts_on_multiple_profiles
-from .show_all_profiles import show_all_profiles
+from .run_chrome_scripts_on_multiple_users import run_chrome_scripts_on_multiple_users
+from .run_manager_scripts_on_multiple_users import run_manager_scripts_on_multiple_users
+from .show_all_users import show_all_users
 from .update_comments import update_comments
+from .settings import settings
 
 from .utils import *

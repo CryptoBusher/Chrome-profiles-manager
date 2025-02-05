@@ -9,22 +9,22 @@ from loguru import logger
 from .utils import js_click, close_all_other_tabs
 
 
-def chrome_initial_setup(profile_name: str | int, script_data_path: str, driver: webdriver.Chrome) -> None:
+def chrome_initial_setup(user_name: str | int, script_data_path: str, driver: webdriver.Chrome) -> None:
     with open(os.path.join(script_data_path, 'config.json'), 'r', encoding="utf-8") as f:
         config = json.load(f)
 
     working_tab = driver.current_window_handle
 
     if config["run_delay_sec"]:
-        logger.debug(f"{profile_name} - waiting {config['run_delay_sec']} sec")
+        logger.debug(f"{user_name} - waiting {config['run_delay_sec']} sec")
         time.sleep(config["run_delay_sec"])
 
     close_all_other_tabs(driver, working_tab)
 
-    turn_off_sync(profile_name, driver, working_tab)
-    turn_off_autofill(profile_name, driver, working_tab)
-    adjust_privacy_choices(profile_name, driver, working_tab)
-    adjust_tabs_memorizing(profile_name, driver, working_tab, config["startup_settings"]["remember_tabs"])
+    turn_off_sync(user_name, driver, working_tab)
+    turn_off_autofill(user_name, driver, working_tab)
+    adjust_privacy_choices(user_name, driver, working_tab)
+    adjust_tabs_memorizing(user_name, driver, working_tab, config["startup_settings"]["remember_tabs"])
 
     # TODO: fix this shit
     # if profile_name:

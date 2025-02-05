@@ -1,6 +1,3 @@
-import json
-
-from loguru import logger
 import questionary
 
 

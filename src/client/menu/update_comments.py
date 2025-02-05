@@ -4,13 +4,13 @@ import os
 import questionary
 from loguru import logger
 
-from src.utils.helpers import set_comments_for_profiles
-from .utils import select_profiles, custom_style
+from src.utils.helpers import set_comments_for_users
+from .utils import select_users, custom_style
 
 
 def update_comments():
-    selected_profiles = select_profiles()
-    if not selected_profiles:
+    selected_users = select_users()
+    if not selected_users:
         return
 
     new_comment = questionary.text(
@@ -18,7 +18,7 @@ def update_comments():
         style=custom_style
     ).ask()
 
-    result = set_comments_for_profiles(selected_profiles, new_comment)
+    result = set_comments_for_users(selected_users, new_comment)
 
     if result["success"]:
         logger.info("✅  Комментарии обновлены")

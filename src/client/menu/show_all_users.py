@@ -2,14 +2,15 @@ from loguru import logger
 from rich.table import Table
 from rich.console import Console
 
-from src.utils.helpers import get_comments_for_profiles
-from .utils import get_all_sorted_profiles
+from src.utils.helpers import get_comments_for_users, get_users_list, sort_users
 
 
-def show_all_profiles():
-    profiles_list_sorted = get_all_sorted_profiles()
-    if not profiles_list_sorted:
-        logger.error("⛔  Профили отсутствуют")
+def show_all_users():
+    users_list = get_users_list()
+    users_list_sorted = sort_users(users_list)
+
+    if not users_list_sorted:
+        logger.error("⛔  Юзеры отсутствуют")
         return
 
     console = Console()
@@ -17,15 +18,15 @@ def show_all_profiles():
     table.add_column("Название", style="magenta")
     table.add_column("Комментарии", style="green")
 
-    result = get_comments_for_profiles()
+    result = get_comments_for_users()
     if result["success"]:
         comments = result["comments"]
     else:
         logger.warning(f"⚠️ Не удалось загрузить комментарии, причина: {result["description"]}")
         comments = {}
 
-    for profile in profiles_list_sorted:
-        comment = comments.get(profile, '')
-        table.add_row(profile, comment)
+    for user in users_list_sorted:
+        comment = comments.get(user, '')
+        table.add_row(user, comment)
 
     console.print(table)

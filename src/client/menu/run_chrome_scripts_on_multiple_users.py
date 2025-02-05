@@ -4,12 +4,12 @@ import questionary
 from loguru import logger
 
 from src.chrome.chrome import Chrome
-from .utils import select_profiles, custom_style
+from .utils import select_users, custom_style
 
 
-def run_chrome_scripts_on_multiple_profiles():
-    selected_profiles = select_profiles()
-    if not selected_profiles:
+def run_chrome_scripts_on_multiple_users():
+    selected_users = select_users()
+    if not selected_users:
         return
 
     chrome = Chrome()
@@ -54,9 +54,7 @@ def run_chrome_scripts_on_multiple_profiles():
 
     headless = True if 'да' in headless_choice else False
 
-    for name in selected_profiles:
-        chrome.run_scripts(
-            str(name),
-            chosen_scripts,
-            headless
-        )
+    for name in selected_users:
+        chrome.run_scripts(str(name),
+                           chosen_scripts,
+                           headless)

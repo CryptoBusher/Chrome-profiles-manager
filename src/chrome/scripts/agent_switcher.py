@@ -13,7 +13,7 @@ from loguru import logger
 from .utils import js_click, close_all_other_tabs
 
 
-def agent_switcher(profile_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome):
+def agent_switcher(user_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome):
     with open(os.path.join(script_data_path, 'config.json'), 'r', encoding="utf-8") as f:
         config = json.load(f)
 
@@ -21,7 +21,7 @@ def agent_switcher(profile_name: str | int, script_data_path: str | Path, driver
     wait = WebDriverWait(driver, 3)
 
     if config["run_delay_sec"]:
-        logger.debug(f"{profile_name} - waiting {config['run_delay_sec']} sec")
+        logger.debug(f"{user_name} - waiting {config['run_delay_sec']} sec")
         time.sleep(config["run_delay_sec"])
 
     close_all_other_tabs(driver, working_tab)
@@ -38,7 +38,7 @@ def agent_switcher(profile_name: str | int, script_data_path: str | Path, driver
             checkbox = wait.until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
 
             toggle_checkbox(driver, checkbox, setting["must_be_enabled"], working_tab)
-            logger.debug(f'{profile_name} - general setting "{setting["human_name"]}" adjusted to {setting["must_be_enabled"]}')
+            logger.debug(f'{user_name} - general setting "{setting["human_name"]}" adjusted to {setting["must_be_enabled"]}')
 
         time.sleep(0.5)
 
@@ -52,7 +52,7 @@ def agent_switcher(profile_name: str | int, script_data_path: str | Path, driver
             checkbox = wait.until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
 
             toggle_checkbox(driver, checkbox, setting["must_be_enabled"], working_tab)
-            logger.debug(f'{profile_name} - generator setting "{setting["human_name"]}" adjusted to {setting["must_be_enabled"]}')
+            logger.debug(f'{user_name} - generator setting "{setting["human_name"]}" adjusted to {setting["must_be_enabled"]}')
 
         time.sleep(0.5)
 

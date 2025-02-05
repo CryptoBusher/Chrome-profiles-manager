@@ -1,5 +1,3 @@
-import json
-import shutil
 import os
 from concurrent.futures import ThreadPoolExecutor
 
@@ -8,16 +6,16 @@ from loguru import logger
 
 from config import general_config
 from src.utils.helpers import (get_all_default_extensions_info,
-                               get_profiles_extensions_info,
+                               get_default_profiles_extensions_info,
                                copy_extension,
-                               remove_extensions)
+                               remove_extensions_in_default_profiles)
 from src.utils.constants import *
-from .utils import select_profiles, custom_style
+from .utils import select_users, custom_style
 
 
 def manage_extensions():
-    selected_profiles = select_profiles()
-    if not selected_profiles:
+    selected_users = select_users()
+    if not selected_users:
         return
 
     extension_activity = questionary.select(
@@ -35,17 +33,17 @@ def manage_extensions():
         return
 
     if 'добавить дефолтные без замены' in extension_activity:
-        add_default_extensions(selected_profiles, False)
+        add_default_extensions(selected_users, False)
     elif 'добавить дефолтные с заменой' in extension_activity:
-        add_default_extensions(selected_profiles, True)
+        add_default_extensions(selected_users, True)
     elif 'удалить расширения' in extension_activity:
-        remove_extensions_menu(selected_profiles)
+        remove_extensions_menu(selected_users)
     else:
         logger.warning('⚠️ Действие с расширениями не выбрано')
         return
 
 
-def add_default_extensions(selected_profiles: list[str], replace=False) -> None:
+def add_default_extensions(selected_users: list[str | int], replace=False) -> None:
     default_extensions_info = get_all_default_extensions_info()
     if not default_extensions_info:
         logger.warning('⚠️ Дефолтные расширения не найдены')
@@ -70,26 +68,26 @@ def add_default_extensions(selected_profiles: list[str], replace=False) -> None:
 
     with ThreadPoolExecutor(max_workers=general_config['max_workers']) as executor:
         futures = []
-        for profile in selected_profiles:
-            profile_extensions_path = CHROME_DATA_PATH / f"Profile {profile}" / "Extensions"
-            os.makedirs(profile_extensions_path, exist_ok=True)
+        for user in selected_users:
+            user_default_profile_extensions_path = USERS_PATH / str(user) / str(USER_DEFAULT_PROFILE_NAME) / "Extensions"
+            os.makedirs(user_default_profile_extensions_path, exist_ok=True)
 
             for ext_id in selected_ids:
                 src_path = os.path.join(DEFAULT_EXTENSIONS_PATH, ext_id)
-                dest_path = os.path.join(profile_extensions_path, ext_id)
-                futures.append(executor.submit(copy_extension, src_path, dest_path, profile, ext_id, replace))
+                dest_path = os.path.join(user_default_profile_extensions_path, ext_id)
+                futures.append(executor.submit(copy_extension, src_path, dest_path, user, ext_id, replace))
 
 
-def remove_extensions_menu(selected_profiles: list[str]) -> None:
-    profiles_extension_info = get_profiles_extensions_info(selected_profiles)
+def remove_extensions_menu(selected_users: list[str | int]) -> None:
+    default_profiles_extension_info = get_default_profiles_extensions_info(selected_users)
 
-    if not profiles_extension_info:
-        logger.warning('⚠️ Расширения в профилях не найдены')
+    if not default_profiles_extension_info:
+        logger.warning('⚠️ Расширения в дефолтных профилях не найдены')
         return
 
     choices = [
         f"{ext_id} ({name})" if name else ext_id
-        for ext_id, name in profiles_extension_info.items()
+        for ext_id, name in default_profiles_extension_info.items()
     ]
 
     selected_extensions = questionary.checkbox(
@@ -104,8 +102,8 @@ def remove_extensions_menu(selected_profiles: list[str]) -> None:
         logger.warning('⚠️ Расширения не выбраны')
         return
 
-    for profile in selected_profiles:
-        remove_extensions(profile, selected_ids)
+    for user in selected_users:
+        remove_extensions_in_default_profiles(user, selected_ids)
 
 
 

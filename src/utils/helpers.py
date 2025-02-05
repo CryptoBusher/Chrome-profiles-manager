@@ -2,26 +2,34 @@ import os
 import json
 import shutil
 import sys
+import math
 
 from loguru import logger
 
 from src.utils.constants import *
 
 
-def get_profiles_list() -> list[str]:
-    profiles = []
-    for item in os.listdir(CHROME_DATA_PATH):
-        item_path = os.path.join(CHROME_DATA_PATH, item)
+def get_users_list() -> list[str]:
+    users = []
+    for user in os.listdir(USERS_PATH):
+        users.append(user)
 
-        if os.path.isdir(item_path) and item.startswith("Profile"):
-            profiles.append(item.replace('Profile ', ''))
-
-    return profiles
+    return sort_users(users)
 
 
-def get_comments_for_profiles() -> dict:
+def sort_users(users_list: list[str | int]) -> list[str]:
+    numeric_users = [u for u in users_list if u.isdigit()]
+    non_numeric_users = [u for u in users_list if not any(char.isdigit() for char in u)]
+    numeric_users.sort(key=int)
+    non_numeric_users.sort()
+
+    users_list_sorted = numeric_users + non_numeric_users
+    return users_list_sorted
+
+
+def get_comments_for_users() -> dict:
     try:
-        comments_file_path = DATA_PATH / "comments_for_profiles.json"
+        comments_file_path = DATA_PATH / "comments_for_users.json"
         with open(comments_file_path, 'r', encoding="utf-8") as f:
             comments = json.load(f)
     except FileNotFoundError:
@@ -42,18 +50,18 @@ def get_comments_for_profiles() -> dict:
     }
 
 
-def set_comments_for_profiles(profile_names: list[str | int], comment: str | int | float) -> dict:
-    result = get_comments_for_profiles()
+def set_comments_for_users(user_names: list[str | int], comment: str | int | float) -> dict:
+    result = get_comments_for_users()
     if result["success"]:
         comments = result["comments"]
     else:
         logger.warning(f"⚠️ Не удалось загрузить комментарии, причина: {result["description"]}")
         return result
 
-    for profile_name in profile_names:
-        comments[profile_name] = comment
+    for name in user_names:
+        comments[name] = comment
 
-    comments_file_path = DATA_PATH / "comments_for_profiles.json"
+    comments_file_path = DATA_PATH / "comments_for_users.json"
     with open(comments_file_path, 'w', encoding="utf-8") as f:
         json.dump(comments, f, indent=4, ensure_ascii=False)
 
@@ -62,56 +70,56 @@ def set_comments_for_profiles(profile_names: list[str | int], comment: str | int
     }
 
 
-def copy_extension(src_path: str, dest_path: str, profile: str | int, ext_id: str, replace: bool = False):
+def copy_extension(src_path: str, dest_path: str, user_name: str | int, ext_id: str, replace: bool = False):
     if replace:
         if os.path.exists(dest_path):
             shutil.rmtree(dest_path)
         try:
             shutil.copytree(src_path, dest_path)
-            logger.info(f'✅  {profile} - добавлено/заменено расширение {ext_id}')
+            logger.info(f'✅  {user_name} - добавлено/заменено расширение {ext_id}')
             return True
         except Exception as e:
-            logger.error(f'⛔  {profile} - не удалось добавить расширение {ext_id}')
-            logger.debug(f'{profile} - не удалось добавить расширение {ext_id}, причина: {e}')
+            logger.error(f'⛔  {user_name} - не удалось добавить расширение {ext_id}')
+            logger.debug(f'{user_name} - не удалось добавить расширение {ext_id}, причина: {e}')
             return False
     else:
         if os.path.exists(dest_path):
-            logger.debug(f'{profile} - расширение {ext_id} уже существует, пропущено')
+            logger.debug(f'{user_name} - расширение {ext_id} уже существует, пропущено')
             return False
         else:
             try:
                 shutil.copytree(src_path, dest_path)
-                logger.info(f'✅  {profile} - добавлено расширение {ext_id}')
+                logger.info(f'✅  {user_name} - добавлено расширение {ext_id}')
                 return True
             except Exception as e:
-                logger.error(f'⛔  {profile} - не удалось добавить расширение {ext_id}')
-                logger.debug(f'{profile} - не удалось добавить расширение {ext_id}, причина: {e}')
+                logger.error(f'⛔  {user_name} - не удалось добавить расширение {ext_id}')
+                logger.debug(f'{user_name} - не удалось добавить расширение {ext_id}, причина: {e}')
                 return False
 
 
-def remove_extensions(profile: str | int, ext_ids: list[str]) -> None:
-    extensions_path = os.path.join(CHROME_DATA_PATH, f"Profile {profile}", "Extensions")
-    extensions_settings_path = os.path.join(CHROME_DATA_PATH, f"Profile {profile}", "Local Extension Settings")
+def remove_extensions_in_default_profiles(user_name: str | int, ext_ids: list[str]) -> None:
+    extensions_path = USERS_PATH / str(user_name) / str(USER_DEFAULT_PROFILE_NAME) / "Extensions"
+    extensions_settings_path = USERS_PATH / str(user_name) / str(USER_DEFAULT_PROFILE_NAME) / "Local Extension Settings"
 
     for ext_id in ext_ids:
-        ext_path = os.path.join(extensions_path, ext_id)
-        ext_settings_path = os.path.join(extensions_settings_path, ext_id)
+        ext_path = extensions_path / str(ext_id)
+        ext_settings_path = extensions_settings_path / str(ext_id)
 
         try:
             if os.path.isdir(ext_path):
                 shutil.rmtree(ext_path)
-                logger.info(f'{profile} - расширение {ext_id} удалено')
+                logger.info(f'{user_name} - расширение {ext_id} удалено')
         except Exception as e:
-            logger.error(f'⛔  {profile} - не удалоcь удалить расширение {ext_id}')
-            logger.debug(f'{profile} - не удалоcь удалить  расширение {ext_id}, причина: {e}')
+            logger.error(f'⛔  {user_name} - не удалоcь удалить расширение {ext_id}')
+            logger.debug(f'{user_name} - не удалоcь удалить  расширение {ext_id}, причина: {e}')
 
         try:
             if os.path.isdir(ext_settings_path):
                 shutil.rmtree(ext_settings_path)
-                logger.info(f'{profile} - локальные настройки расширения {ext_id} удалены')
+                logger.info(f'{user_name} - локальные настройки расширения {ext_id} удалены')
         except Exception as e:
-            logger.error(f'⛔  {profile} - не удалоcь удалить локальные настройки расширения {ext_id}')
-            logger.debug(f'{profile} - не удалоcь удалить локальные настройки расширения {ext_id}, причина: {e}')
+            logger.error(f'⛔  {user_name} - не удалоcь удалить локальные настройки расширения {ext_id}')
+            logger.debug(f'{user_name} - не удалоcь удалить локальные настройки расширения {ext_id}, причина: {e}')
 
 
 def get_all_default_extensions_info() -> dict:
@@ -126,10 +134,10 @@ def get_all_default_extensions_info() -> dict:
     return extensions_info
 
 
-def get_profiles_extensions_info(profiles_list) -> dict[str, str]:
+def get_default_profiles_extensions_info(users_list: list[str | int]) -> dict[str, str]:
     extensions_info = {}
-    for profile in profiles_list:
-        profile_path = os.path.join(PROJECT_PATH, "data", "profiles", f"Profile {profile}")
+    for user in users_list:
+        profile_path = USERS_PATH / user / USER_DEFAULT_PROFILE_NAME
         extensions_path = os.path.join(profile_path, "Extensions")
         extensions_settings_path = os.path.join(profile_path, "Local Extension Settings")
         if not os.path.isdir(extensions_path) and not os.path.isdir(extensions_settings_path):
@@ -187,3 +195,42 @@ def kill_chrome_processes() -> None:
     except Exception as e:
         logger.error(f'⛔  Не удалоcь завершить процессы Chrome')
         logger.error(f'⛔  Не удалоcь завершить процессы Chrome, причина: {e}')
+
+
+def calculate_window_positions(users_amount: int,
+                               screen_width_px: int = 1920,
+                               screen_height_px: int = 1080,
+                               min_width=300,
+                               min_height=200) -> list[dict[str, int]]:
+
+    cols = math.ceil(math.sqrt(users_amount))
+    rows = math.ceil(users_amount / cols)
+
+    while cols * min_width > screen_width_px or rows * min_height > screen_height_px:
+        cols -= 1
+        rows = math.ceil(users_amount / cols)
+
+    window_width = screen_width_px // cols
+    window_height = screen_height_px // rows
+
+    if window_width < min_width:
+        window_width = min_width
+    if window_height < min_height:
+        window_height = min_height
+
+    user_positions = []
+    for i in range(users_amount):
+        row = i // cols
+        col = i % cols
+
+        x = col * window_width
+        y = row * window_height
+
+        user_positions.append({
+            'x': x,
+            'y': y,
+            'width': window_width,
+            'height': window_height
+        })
+
+    return user_positions

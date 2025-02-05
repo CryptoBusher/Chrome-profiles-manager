@@ -10,24 +10,24 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from loguru import logger
 
-from .utils import parse_proxy, js_click, close_all_other_tabs, get_txt_line_by_profile_name
+from .utils import parse_proxy, js_click, close_all_other_tabs, get_txt_line_by_user_name
 
 
-def omega_proxy_setup(profile_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome) -> None:
+def omega_proxy_setup(user_name: str | int, script_data_path: str | Path, driver: webdriver.Chrome) -> None:
     with open(os.path.join(script_data_path, 'config.json'), 'r') as f:
         config = json.load(f)
 
     proxies_file_path = os.path.join(script_data_path, 'proxies.txt')
-    profile_data = get_txt_line_by_profile_name(profile_name, proxies_file_path)
-    if not profile_data:
+    user_data = get_txt_line_by_user_name(user_name, proxies_file_path)
+    if not user_data:
         raise Exception('прокси не найден')
-    proxy = profile_data.split('|')[1]
+    proxy = user_data.split('|')[1]
 
     working_tab = driver.current_window_handle
     wait = WebDriverWait(driver, 3)
 
     if config["run_delay_sec"]:
-        logger.debug(f"{profile_name} - waiting {config['run_delay_sec']} sec")
+        logger.debug(f"{user_name} - waiting {config['run_delay_sec']} sec")
         time.sleep(config["run_delay_sec"])
 
     close_all_other_tabs(driver, working_tab)
@@ -110,17 +110,3 @@ def omega_proxy_setup(profile_name: str | int, script_data_path: str | Path, dri
         apply_changes_btn = wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@ng-click="applyOptions()"]')))
         close_all_other_tabs(driver, working_tab)
         js_click(driver, apply_changes_btn)
-
-
-def get_proxy_by_profile_name(profile_name: str | int, script_data_path: str) -> str | None:
-    with open(os.path.join(script_data_path, 'proxies.txt'), 'r') as f:
-        proxies_data = [i.strip() for i in f.readlines()]
-
-    selected_proxy = None
-    for line in proxies_data:
-        name, _proxy = line.split('|')
-        if name == str(profile_name):
-            selected_proxy = _proxy
-            break
-
-    return selected_proxy
