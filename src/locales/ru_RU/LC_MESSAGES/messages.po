@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Chrome Profiles Manager\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+# BROWSER MANAGER
+# create profile
+msgid "profile_created"
+msgstr "профиль создан"
+msgid "profile_already_exists"
+msgstr "профиль уже существует"
+msgid "failed_to_create_profile"
+msgstr "не удалось создать профиль"
+
+# launch profile
+msgid "profile_launched"
+msgstr "профиль запущен"
+msgid "failed_to_launch_profile"
+msgstr "не удалось запустить профиль"
+msgid "missing_free_ports"
+msgstr "отсутствуют свободные порты для подключения"
+
+# AUTOMATION MANAGER
+# run script
+msgid "invalid_script_configuration"
+msgstr "неверная конфигурация скрипта"
+msgid "script_file_not_found"
+msgstr "файл со скриптом '{script_file}' не найден"
+msgid "script_run_success"
+msgstr "скрипт '{script_name}' выполнен успешно"
+msgid "script_entry_function_call_error"
+msgstr "ошибка при вызове функции запуска скрипта"
+msgid "unexpected_script_execution_error"
+msgstr "непредвиденная ошибка при выполнении скрипта"
+
+# execute scripts
+msgid "browser_session_is_not_active"
+msgstr "сессия браузера не активна"
+msgid "missing_script_configuration"
+msgstr "отсутствует конфигурация для скрипта {script_name}"
+msgid "launching_script"
+msgstr "запускаю скрипт"
+msgid "debug_port_connection_error"
+msgstr "ошибка при подключении через дебаг порт"
+msgid "unexpected_error_during_scripts_execution_preparation"
+msgstr "непредвиденная ошибка при подготовке к выполнению скриптов"
+
+# EXTENSION MANAGER
+# remove extension from profile
+msgid "removed_extension"
+msgstr "удалено расширение"
+msgid "failed_to_remove_extension"
+msgstr "ошибка при удалении расширения"
+msgid "removed_settings_for_extension"
+msgstr "удалены настройки для расширения"
+msgid "failed_to_remove_settings_for_extension"
+msgstr "ошибка при удалении настроек для расширения"
+
+# add extension to profile
+msgid "missing_extension_in_default_extensions_path"
+msgstr "не удалось найти расширение '{ext_id}' в папке дефолтных расширений"
+msgid "added_extension"
+msgstr "добавлено расширение"
+msgid "failed_to_add_extension"
+msgstr "не удалось добавить расширение"
+
+
+
+
+{_("")}

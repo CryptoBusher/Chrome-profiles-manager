@@ -2,3 +2,4 @@ questionary==2.1.0
 selenium==4.28.1
 loguru==0.6.0
 rich==13.9.4
+toml==0.10.2

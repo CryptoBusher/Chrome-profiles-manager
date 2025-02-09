@@ -1,0 +1,14 @@
+# SELENIUM
+[[selenium]]
+name = "chrome_initial_setup"
+human_name = "Chrome initial setup"
+folder_name = "chrome_initial_setup"
+entry_file = "main.py"
+entry_function = "start"
+
+[[selenium]]
+name = "import_rabby_wallet"
+human_name = "Import rabby wallet"
+folder_name = "import_rabby_wallet"
+entry_file = "main.py"
+entry_function = "start"
