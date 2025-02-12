@@ -21,6 +21,7 @@ class ProjectPaths:
     profiles_path: Path = data_path / "profiles"
     profiles_data_path = data_path / "profiles_data"
     default_extensions_path = data_path / "default_extensions"
+    app_settings_path = data_path / "app_data" / "settings.toml"
 
     locales_path = root_path / "src" / "locales"
 

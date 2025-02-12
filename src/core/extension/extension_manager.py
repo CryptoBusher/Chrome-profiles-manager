@@ -47,6 +47,7 @@ class ExtensionManager:
 
     @classmethod
     def get_profiles_extension_names(cls, profiles_list: list[str | int]) -> dict[str, str]:
+        # TODO: refactor to process single profile
         extensions_info = {}
 
         for profile_name in profiles_list:
@@ -93,10 +94,10 @@ class ExtensionManager:
                 logger.error(f"{profile_name} - {_("failed_to_remove_settings_for_extension")} {ext_id}")
                 logger.debug(f"{profile_name} - failed to remove settings for extension {ext_id}, reason: {e}", exc_info=True)
 
-
     @classmethod
     def add_extension_to_profile(cls, profile_name: str | int, ext_id: str, replace: bool = False) -> None:
-        profile_path = ProjectPaths.profiles_path  / str(profile_name) / "Default"
+        profile_name = str(profile_name)
+        profile_path = ProjectPaths.profiles_path / profile_name / "Default"
         source_path = ProjectPaths.default_extensions_path / ext_id
         destination_path = profile_path / "Extensions" / ext_id
 

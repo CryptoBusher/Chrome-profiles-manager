@@ -2,26 +2,25 @@ import gettext
 import os
 from sys import stderr
 
+import toml
 from loguru import logger
 from src.utils.constants import ProjectPaths
 
 
-EMOJIS = {
-    "SUCCESS": "✅",
-    "ERROR": "⛔",
-    "WARNING": "⚠️",
-    "INFO": "ℹ️",
-    "DEBUG": "🐛",
-}
-
-
-def logs_emoji_filter(record):
-    level = record["level"].name
-    emoji = EMOJIS.get(level, "")
-    return f"{emoji} {record['message']}"
-
-
 def set_logger():
+    def logs_emoji_filter(record):
+        EMOJIS = {
+            "SUCCESS": "✅",
+            "ERROR": "⛔",
+            "WARNING": "⚠️",
+            "INFO": "ℹ️",
+            "DEBUG": "🐛",
+        }
+
+        level = record["level"].name
+        emoji = EMOJIS.get(level, "")
+        return f"{emoji} {record['message']}"
+
     logger.remove()
     log_format = "<white>{time:YYYY-MM-DD HH:mm:ss}</white> | <level>{level: <8}</level> | <white>{message}</white>"
     logger.add(stderr, level="INFO", format=log_format, filter=logs_emoji_filter)

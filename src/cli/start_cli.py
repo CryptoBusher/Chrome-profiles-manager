@@ -11,7 +11,7 @@ from .automation_cli import AutomationCli
 from .settings_cli import SettingsCli
 
 
-class StartPage(BaseCli):
+class StartCli(BaseCli):
     CLI_OPTIONS = {
         'launch_profiles': {
             'human_name': '🚀 запуск профилей',
@@ -47,12 +47,12 @@ class StartPage(BaseCli):
         },
         'exit': {
             'human_name': '🚪 выход',
-            'action': lambda: StartPage.exit_programm()
+            'action': lambda: StartCli.exit_program()
         }
     }
 
     @staticmethod
-    def exit_programm():
+    def exit_program():
         logger.info("Выход из программы")
         exit(0)
 
@@ -67,7 +67,7 @@ class StartPage(BaseCli):
             ).ask()
 
             if selected_option_human_name is None:
-                cls.exit_programm()
+                cls.exit_program()
 
             selected_option_key = next(
                 (key for key, value in cls.CLI_OPTIONS.items() if value["human_name"] == selected_option_human_name),
@@ -75,7 +75,7 @@ class StartPage(BaseCli):
             )
 
             if not selected_option_key:
-                cls.exit_programm()
+                cls.exit_program()
 
             selected_option = cls.CLI_OPTIONS[selected_option_key]
             if selected_option["action"]:
