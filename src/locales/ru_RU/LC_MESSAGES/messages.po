@@ -28,7 +28,7 @@ msgstr "отсутствуют свободные порты для подклю
 msgid "invalid_script_configuration"
 msgstr "неверная конфигурация скрипта"
 msgid "script_file_not_found"
-msgstr "файл со скриптом '{script_file}' не найден"
+msgstr "файл со скриптом не найден"
 msgid "script_run_success"
 msgstr "скрипт '{script_name}' выполнен успешно"
 msgid "script_entry_function_call_error"

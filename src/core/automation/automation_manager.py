@@ -2,6 +2,7 @@ import toml
 from pathlib import Path
 import importlib.util
 from typing import Literal
+from dataclasses import dataclass
 
 from loguru import logger
 from selenium import webdriver
@@ -11,6 +12,15 @@ from selenium.webdriver.chrome.options import Options
 from src.utils.constants import ProjectPaths
 from src.core.browser.browser_manager import BrowserManager, Browser
 from .exceptions import DebugPortConnectionError
+
+
+@dataclass
+class ScriptConfig:
+    name: str
+    human_name: str
+    script_path: Path
+    entry_file_path: Path
+    entry_function_name: str
 
 
 class AutomationManager:
@@ -43,34 +53,23 @@ class AutomationManager:
         return None
 
     @classmethod
-    def __run_script(cls, profile_name: str | int, script_name: str, driver: webdriver.Chrome) -> None:
+    def __run_script(cls, profile_name: str | int, script_config: ScriptConfig, driver: webdriver.Chrome) -> None:
         # TODO: test this approach
         try:
             profile_name = str(profile_name)
 
-            script_config = cls.__get_script_config(script_name)
-            if not script_config:
-                raise ValueError(_("missing_script_configuration").format(script_name=script_name))
+            logger.info(f'{profile_name} - {_("launching_script")} {script_config.human_name}')
 
-            logger.info(f'{profile_name} - {_("launching_script")} {script_config["human_name"]}')
+            if not script_config.script_path.is_dir() or script_config.entry_file_path.is_file():
+                raise FileNotFoundError(_("script_file_not_found"))
 
-            required_keys = ['name', 'human_name', 'folder_name', 'entry_file', 'entry_function']
-            if not all(key in script_config for key in required_keys):
-                raise ValueError(_("invalid_script_configuration"))
-
-            script_path: Path = ProjectPaths.automation_path / script_config['type'] / script_config['folder_name']
-            script_file = script_path / script_config['entry_file']
-            if not script_file.is_file():
-                raise FileNotFoundError(_("script_file_not_found").format(script_file=script_file))
-
-            spec = importlib.util.spec_from_file_location(script_config['name'], script_file)
+            spec = importlib.util.spec_from_file_location(script_config['name'], script_config.entry_file_path)
             script_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(script_module)
 
-            entry_function_name = script_config['entry_function']
-            if hasattr(script_module, entry_function_name):
-                function = getattr(script_module, entry_function_name)
-                logger.debug(f'{profile_name} - calling function {entry_function_name} from sctipt "{script_config["human_name"]}"')
+            if hasattr(script_module, script_config.entry_function_name):
+                function = getattr(script_module, script_config.entry_function_name)
+                logger.debug(f'{profile_name} - calling function {script_config.entry_function_name} from sctipt "{script_config["human_name"]}"')
                 function(driver)
             else:
                 raise AttributeError(_("script_entry_function_call_error"))
@@ -90,8 +89,14 @@ class AutomationManager:
     @classmethod
     def execute_scripts(cls,
                         profile_name: str | int,
-                        script_names: list[str],
+                        scripts_type: Literal['selenium', 'playwright', 'other'],
+                        script_configs: list[ScriptConfig],
                         headless: bool = False) -> None:
+        
+        if scripts_type != 'selenium':
+            logger.error(f'Feature under developement')
+            return
+
         try:
             browser = BrowserManager().launch_browser(profile_name=profile_name,
                                             window_geometry=None,
@@ -104,8 +109,8 @@ class AutomationManager:
 
             driver = cls.__establish_debug_port_connection(browser)
 
-            for script_name in script_names:
-                cls.__run_script(profile_name, script_name, driver)
+            for script_config in script_configs:
+                cls.__run_script(profile_name, script_config, driver)
 
             # TODO: kill driver and chrome subprocess, remove debug port from selected ports list, remove profile from active profiles dict
 

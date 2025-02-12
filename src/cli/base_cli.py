@@ -12,6 +12,11 @@ class BaseCli:
         ('text', 'fg:#4d4d4d'),
         ('disabled', 'fg:#858585 italic')
     ])
+    
+    BOOL_OPTIONS = [
+        (True, 'Да'),
+        (False, 'Нет')
+    ]
 
     @classmethod
     def _paginate_selection(cls, items: list[str], item_name: str, items_per_page: int=10) -> list[str]:
