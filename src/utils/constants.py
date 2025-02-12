@@ -16,15 +16,16 @@ class ProjectPaths:
     root_path: Path = find_project_root(Path(__file__).resolve())
 
     automation_path = root_path / "automation"
-    data_path: Path = root_path / "data"
-    logs_path: Path = data_path / "logs"
-    profiles_path: Path = data_path / "users"
-    default_extensions_path: Path = data_path / "default_extensions"
+    data_path = root_path / "data"
+    logs_path = data_path / "logs"
+    profiles_path: Path = data_path / "profiles"
+    profiles_data_path = data_path / "profiles_data"
+    default_extensions_path = data_path / "default_extensions"
 
-    locales_path: Path = root_path / "src" / "locales"
+    locales_path = root_path / "src" / "locales"
 
     driver_name: str = "chromedriver.exe" if platform == "win32" else "chromedriver"
-    chromedriver_path: Path = data_path / "chromedrivers" / driver_name
+    chromedriver_path = data_path / "chromedrivers" / driver_name
     chrome_path: str = (
         r"C:\Program Files\Google\Chrome\Application\chrome.exe"
         if platform == "win32"

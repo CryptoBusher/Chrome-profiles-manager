@@ -1,5 +1,6 @@
 import os
 import socket
+import math
 import subprocess
 from pathlib import Path
 
@@ -14,6 +15,61 @@ class BrowserManager:
         self.active_browsers = {}
         self.busy_debug_ports = []
 
+    @staticmethod
+    def get_profile_welcome_page_path(profile_name: str | int) -> Path:
+        template_welcome_page_path = ProjectPaths.root_path / "src" / "assets" / "welcome_page_template.html"
+        profile_welcome_page_path = ProjectPaths.profiles_path / str(profile_name) / "Default" / "welcome.html"
+
+        with open(template_welcome_page_path, 'r') as template_file:
+            template_content = template_file.read()
+
+        profile_page_content = template_content.replace("{{ profile_name }}", profile_name)
+
+        with open(profile_welcome_page_path, 'w') as profile_page_file:
+            profile_page_file.write(profile_page_content)
+
+        return profile_welcome_page_path
+    
+    @staticmethod
+    def calculate_window_geometry(windows_amount: int,
+                                  window_index: int,
+                                  working_area_width_px: int = 1920,
+                                  working_area_height_px: int = 1080,
+                                  min_width_px=300,
+                                  min_height_px=200) -> dict[str, int]:
+
+        cols = math.ceil(math.sqrt(windows_amount))
+        rows = math.ceil(windows_amount / cols)
+
+        while cols * min_width_px > working_area_width_px or rows * min_height_px > working_area_height_px:
+            cols -= 1
+            rows = math.ceil(windows_amount / cols)
+
+        window_width = working_area_width_px // cols
+        window_height = working_area_height_px // rows
+
+        if window_width < min_width_px:
+            window_width = min_width_px
+        if window_height < min_height_px:
+            window_height = min_height_px
+
+        all_window_positions = []
+        for i in range(windows_amount):
+            row = i // cols
+            col = i % cols
+
+            x = col * window_width
+            y = row * window_height
+
+            all_window_positions.append({
+                'x': x,
+                'y': y,
+                'w': window_width,
+                'h': window_height
+            })
+
+        return all_window_positions[window_index]
+
     def __create_launch_flags(self,
                               profile_name: str | int,
                               window_params: dict | None = None,
@@ -23,7 +79,7 @@ class BrowserManager:
             
             profile_path: Path = ProjectPaths.profiles_path / str(profile_name)
             profile_extensions_path: Path = profile_path / "Default" / "Extensions"
-            profile_welcome_page_path: Path = self.__get_profile_welcome_page_path(profile_name)
+            profile_welcome_page_path: Path = self.get_profile_welcome_page_path(profile_name)
 
             all_extensions = []
             for ext_id in os.listdir(profile_extensions_path):
@@ -66,7 +122,6 @@ class BrowserManager:
 
             return flags
 
-
     def __find_free_port(self, start_port=9222, max_port=9300) -> int | None:
         for port in range(start_port, max_port):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -76,22 +131,6 @@ class BrowserManager:
                     return port
                 
         return None
-                
-    @staticmethod
-    def __get_profile_welcome_page_path(profile_name: str | int) -> Path:
-        template_welcome_page_path = ProjectPaths.root_path / "src" / "assets" / "welcome_page_template.html"
-        profile_welcome_page_path = ProjectPaths.profiles_path / str(profile_name) / "Default" / "welcome.html"
-
-        with open(template_welcome_page_path, 'r') as template_file:
-            template_content = template_file.read()
-
-        profile_page_content = template_content.replace("{{ profile_name }}", profile_name)
-
-        with open(profile_welcome_page_path, 'w') as profile_page_file:
-            profile_page_file.write(profile_page_content)
-
-        return profile_welcome_page_path
-
 
     def create_profile(self, profile_name: str | int) -> None:
         try:
@@ -130,3 +169,5 @@ class BrowserManager:
         except Exception as e:
             logger.error(f'{profile_name} - {_("failed_to_launch_profile")}')
             logger.debug(f'{profile_name} - failed to launch profile, reason: {e}', exc_info=True)
+
+    
