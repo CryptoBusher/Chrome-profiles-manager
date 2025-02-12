@@ -23,7 +23,7 @@ class ProjectPaths:
     default_extensions_path = data_path / "default_extensions"
     app_settings_path = data_path / "app_data" / "settings.toml"
 
-    locales_path = root_path / "src" / "locales"
+    assets_path = root_path / 'src' / 'assets' 
 
     driver_name: str = "chromedriver.exe" if platform == "win32" else "chromedriver"
     chromedriver_path = data_path / "chromedrivers" / driver_name

@@ -1,32 +1,37 @@
-import gettext
-from pathlib import Path
-
 import toml
+from pathlib import Path
+from typing import Any
 
 from src.utils.constants import ProjectPaths
+from .settings_meta import SETTINGS_META, ParamType
+
 
 
 class SettingsManager:
-    SETTINGS_PATH = ProjectPaths.app_settings_path
+    @staticmethod
+    def get_settings() -> dict:
+        return toml.load(ProjectPaths.app_settings_path)
+    
+    @staticmethod
+    def save_settings(new_settings: dict) -> None:
+        with open(ProjectPaths.app_settings_path, 'w') as f:
+            toml.dump(new_settings, f)
 
-    @classmethod
-    def load_settings(cls) -> dict:
-        if not cls.SETTINGS_PATH.exists():
-            raise FileNotFoundError(f'App settings file not found at "{cls.SETTINGS_PATH.name}"')
+    @staticmethod
+    def get_meta(group: str):
+        return SETTINGS_META.get(group, [])
 
-        return toml.load(cls.SETTINGS_PATH)
+    @staticmethod
+    def get_value(group: str, param: str) -> Any:
+        return SettingsManager.get_settings()[group].get(param)
 
-    @classmethod
-    def save_settings(cls, settings: dict) -> None:
-        with open(cls.SETTINGS_PATH, "w") as f:
-            toml.dump(settings, f)
+    @staticmethod
+    def get_groups():
+        return list(SETTINGS_META.keys())
 
-    @classmethod
-    def set_language(cls, language_code: str) -> None:
-        global current_language  # TODO: change global variable here
-        current_language = language_code
-        lang = gettext.translation('messages',
-                                   localedir=ProjectPaths.locales_path,
-                                   languages=[language_code],
-                                   fallback=True)
-        lang.install()
+    @staticmethod
+    def update_setting(cls, group: str, param: str, value: Any) -> None:
+        settings = SettingsManager.get_settings()
+        if group in settings and param in settings[group]:
+            settings[group][param] = value
+            SettingsManager.save_settings(settings)

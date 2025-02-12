@@ -1,8 +1,6 @@
 import questionary
 from loguru import logger
 
-from src.utils.constants import ProjectPaths
-
 
 class BaseCli:
     CUSTOM_STYLE = questionary.Style([

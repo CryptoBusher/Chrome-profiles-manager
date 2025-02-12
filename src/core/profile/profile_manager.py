@@ -28,7 +28,7 @@ class ProfileManager:
     @staticmethod
     def get_profile_welcome_page_path(profile_name: str | int) -> Path:
         profile_name = str(profile_name)
-        template_welcome_page_path = ProjectPaths.root_path / "src" / "assets" / "welcome_page_template.html"
+        template_welcome_page_path = ProjectPaths.assets_path / "welcome_page_template.html"
         profile_welcome_page_path = ProjectPaths.profiles_path / profile_name / "Default" / "welcome.html"
 
         with open(template_welcome_page_path, 'r') as template_file:

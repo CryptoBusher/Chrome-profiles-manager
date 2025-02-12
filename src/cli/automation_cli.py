@@ -1,5 +1,3 @@
-import re
-import json
 from random import shuffle
 
 import toml

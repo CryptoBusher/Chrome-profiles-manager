@@ -1,0 +1,9 @@
+[general]
+max_workers = 10
+
+[browser]
+launch_delay_sec = 0.1
+reverse_launch_order = false
+distribute = true
+working_area_width_px = 1850
+working_area_height_px = 1080
