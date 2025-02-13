@@ -8,8 +8,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
+from src.core import BrowserManager, Browser, Chromium
 from src.utils.constants import ProjectPaths
-from src.core.browser.browser_manager import BrowserManager, Browser, Chromium
 from src.exceptions import AutomationError
 
 
@@ -46,13 +46,13 @@ class AutomationManager:
         if not script_config.script_path.is_dir() or script_config.entry_file_path.is_file():
             raise FileNotFoundError('script directory or file not found')
 
-        spec = importlib.util.spec_from_file_location(script_config['name'], script_config.entry_file_path)
+        spec = importlib.util.spec_from_file_location(script_config.name, script_config.entry_file_path)
         script_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(script_module)
 
         if hasattr(script_module, script_config.entry_function_name):
             function = getattr(script_module, script_config.entry_function_name)
-            logger.debug(f'{profile_name} - calling function {script_config.entry_function_name} from sctipt "{script_config["human_name"]}"')
+            logger.debug(f'{profile_name} - calling function {script_config.entry_function_name} from script "{script_config.human_name}"')
             function(driver)
         else:
             raise AutomationError('script entry function call error')

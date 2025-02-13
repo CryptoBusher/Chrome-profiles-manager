@@ -1,10 +1,9 @@
-import os
 import json
 import shutil
 from pathlib import Path
 
-from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 from src.utils.constants import ProjectPaths
+from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 
 
 class ExtensionManager:

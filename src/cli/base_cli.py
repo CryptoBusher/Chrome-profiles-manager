@@ -1,9 +1,8 @@
-import questionary
-from loguru import logger
+from questionary import checkbox, Style
 
 
 class BaseCli:
-    CUSTOM_STYLE = questionary.Style([
+    CUSTOM_STYLE = Style([
         ('question', 'bold'),
         ('answer', 'fg:#ff9900 bold'),
         ('pointer', 'fg:#ff9900 bold'),
@@ -27,7 +26,7 @@ class BaseCli:
             end = min(start + items_per_page, len(items))
             page_items = items[start:end]
 
-            selected_items_on_page = questionary.checkbox(
+            selected_items_on_page = checkbox(
                 f"Choose {item_name} (page {current_page + 1} of {total_pages})",
                 choices=page_items,
                 style=cls.CUSTOM_STYLE,

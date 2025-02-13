@@ -7,9 +7,9 @@ from dataclasses import dataclass
 
 from selenium import webdriver
 
-from src.exceptions import NoFreePortsError
+from src.core import ProfileManager
 from src.utils.constants import ProjectPaths
-from src.core.profile.profile_manager import ProfileManager
+from src.exceptions import NoFreePortsError
 
 
 @dataclass

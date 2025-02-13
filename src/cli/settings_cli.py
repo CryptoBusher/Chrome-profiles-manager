@@ -1,12 +1,11 @@
 from loguru import logger
 from questionary import select, text, confirm
 
-from .base_cli import BaseCli
-from src.core.settings.settings_meta import ParamType
-from src.core.settings.settings_manager import SettingsManager
+from src.cli import BaseCli
+from src.core import SettingsManager, ParamType
 
 
-class SettingsCLI(BaseCli):
+class SettingsCli(BaseCli):
     @classmethod
     def start(cls):
         while True:
@@ -95,7 +94,7 @@ class SettingsCLI(BaseCli):
                 default=str(current_value),
                 validate=lambda val: cls._validate_param_value(param, val)
             ).ask()
-        
+
         except:
             return None
 
@@ -113,7 +112,7 @@ class SettingsCLI(BaseCli):
                 
             try:
                 return int(value) if param.param_type == ParamType.INT else float(value)
-            except:
+            except ValueError:
                 logger.error("Invalid number format")
 
     @staticmethod

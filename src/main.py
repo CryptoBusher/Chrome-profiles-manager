@@ -1,6 +1,5 @@
-from cli import StartCli
+from src.cli import StartCli
 from .loader import setup_app
-
 
 
 if __name__ == "__main__":

@@ -2,14 +2,12 @@ import re
 from time import sleep
 
 from questionary import select, text
-from loguru import logger
 from rich.console import Console
+from loguru import logger
 
-from .base_cli import BaseCli
+from src.cli import BaseCli
+from src.core import SettingsManager, BrowserManager, ProfileManager
 from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError, NoFreePortsError
-from src.core.settings.settings_manager import SettingsManager
-from src.core.browser.browser_manager import BrowserManager
-from src.core.profile.profile_manager import ProfileManager
 
 
 class ProfilesCli(BaseCli):
@@ -40,7 +38,7 @@ class ProfilesCli(BaseCli):
 
         select_method_key = next((key for key, value in select_options.items() if value == select_method_value), None)
 
-        if select_method_key == None or select_method_key == 'back_to_start':
+        if select_method_key is None or select_method_key == 'back_to_start':
             return
 
         selected_profiles = []
@@ -104,7 +102,7 @@ class ProfilesCli(BaseCli):
 
         create_method_key = next((key for key, value in create_methods.items() if value == create_method_value), None)
 
-        if create_method_key == None or create_method_key == 'back_to_start':
+        if create_method_key is None or create_method_key == 'back_to_start':
             return
 
         profiles_to_create = []
@@ -165,8 +163,8 @@ class ProfilesCli(BaseCli):
             try:
                 window_geometry = BrowserManager.calculate_window_geometry(len(selected_profiles),
                                                                         i,
-                                                                        SettingsManager.get_settings['browser']['working_area_width_px'],
-                                                                        SettingsManager.get_settings['browser']['working_area_height_px'])
+                                                                        SettingsManager.get_settings()['browser']['working_area_width_px'],
+                                                                        SettingsManager.get_settings()['browser']['working_area_height_px'])
                 BrowserManager().launch_browser(profile_name=profile_name,
                                                 window_geometry=window_geometry,
                                                 debug=False,
@@ -176,7 +174,7 @@ class ProfilesCli(BaseCli):
                 logger.success(f'{profile_name} - profile launched')
                 sleep(SettingsManager.get_settings()['browser']['launch_delay_sec'])
             except NoFreePortsError as e:
-                logger.erorr(f'{profile_name} - {e}')
+                logger.error(f'{profile_name} - {e}')
             except Exception as e:
                 logger.error(f'{profile_name} - unexpected error during launching profile')
                 logger.bind(exception=True).debug(f'{profile_name} - unexpected error during launching profile, reason: {e}')

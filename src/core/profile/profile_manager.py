@@ -1,11 +1,10 @@
 import os
 import json
-import shutil
 from pathlib import Path
 
 from rich.table import Table
-from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError
 from src.utils.constants import ProjectPaths
+from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError
 
 
 class ProfileManager:
@@ -64,8 +63,10 @@ class ProfileManager:
 
         comments[profile_name] = new_comment
 
-        with open(cls.COMMENTS_FILE_PATH, 'w', encoding="utf-8") as f:
-            json.dump(comments, f, indent=4, ensure_ascii=False)
+        cls.COMMENTS_FILE_PATH.write_text(
+            json.dumps(comments, indent=4, ensure_ascii=False),
+            encoding="utf-8"
+        )
 
     @classmethod
     def get_sorted_profiles_list(cls) -> list[str] | None:

@@ -1,10 +1,8 @@
 import toml
-from pathlib import Path
 from typing import Any
 
+from .settings_meta import SETTINGS_META
 from src.utils.constants import ProjectPaths
-from .settings_meta import SETTINGS_META, ParamType
-
 
 
 class SettingsManager:
@@ -14,8 +12,7 @@ class SettingsManager:
     
     @staticmethod
     def save_settings(new_settings: dict) -> None:
-        with open(ProjectPaths.app_settings_path, 'w') as f:
-            toml.dump(new_settings, f)
+        ProjectPaths.app_settings_path.write_text(toml.dumps(new_settings))
 
     @staticmethod
     def get_meta(group: str):
@@ -30,7 +27,7 @@ class SettingsManager:
         return list(SETTINGS_META.keys())
 
     @staticmethod
-    def update_setting(cls, group: str, param: str, value: Any) -> None:
+    def update_setting(group: str, param: str, value: Any) -> None:
         settings = SettingsManager.get_settings()
         if group in settings and param in settings[group]:
             settings[group][param] = value

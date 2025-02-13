@@ -1,10 +1,9 @@
 import questionary
 from loguru import logger
 
-from .base_cli import BaseCli
+from src.cli import BaseCli, ProfilesCli
+from src.core import ExtensionManager
 from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
-from src.cli.profiles_cli import ProfilesCli
-from src.core.extension.extension_manager import ExtensionManager
 
 
 class ExtensionsCli(BaseCli):
@@ -28,7 +27,7 @@ class ExtensionsCli(BaseCli):
 
         activity_option_key = next((key for key, value in activity_options.items() if value == activity_option_value), None)
 
-        if activity_option_key == None or activity_option_key == 'back_to_start':
+        if activity_option_key is None or activity_option_key == 'back_to_start':
             return
 
         selected_profiles = ProfilesCli.select_profiles()

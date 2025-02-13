@@ -3,12 +3,8 @@ from sys import exit
 import questionary
 from loguru import logger
 
+from src.cli import BaseCli, ProfilesCli, ExtensionsCli, AutomationCli, SettingsCli
 from src.utils.helpers import kill_chrome_processes
-from .base_cli import BaseCli
-from .profiles_cli import ProfilesCli
-from .extensions_cli import ExtensionsCli
-from .automation_cli import AutomationCli
-from .settings_cli import SettingsCli
 
 
 class StartCli(BaseCli):
@@ -43,7 +39,7 @@ class StartCli(BaseCli):
         },
         'settings': {
             'human_name': '🔧 Settings',
-            'action': lambda: SettingsCli.show()
+            'action': lambda: SettingsCli.start()
         },
         'exit': {
             'human_name': '🚪 Exit',
@@ -80,7 +76,7 @@ class StartCli(BaseCli):
 
             except Exception as e:
                 logger.error('Unexpected error')
-                logger.bind(exception=True).debug(f'Unexpected erorr, reason: {e}')
+                logger.bind(exception=True).debug(f'Unexpected error, reason: {e}')
 
     @staticmethod
     def exit_program():

@@ -1,15 +1,15 @@
 from random import shuffle
+from typing import Literal, cast
 
 import toml
 from loguru import logger
 from questionary import select, checkbox
 
-from .base_cli import BaseCli
+from src.cli import ProfilesCli, BaseCli
+from src.core import AutomationManager, ScriptConfig, BrowserManager
 from src.utils.constants import ProjectPaths
-from src.cli.profiles_cli import ProfilesCli
-from src.exceptions import AutomationError
-from src.core.browser.browser_manager import BrowserManager
-from src.core.automation.automation_manager import AutomationManager, ScriptConfig, NoFreePortsError
+from src.exceptions import AutomationError, NoFreePortsError
+
 
 
 class AutomationCli(BaseCli):
@@ -33,10 +33,12 @@ class AutomationCli(BaseCli):
         if activity_option_value is None:
             return
 
-        script_type = next((key for key, value in activity_options.items() if value == activity_option_value), None)
+        activity_option_key = next((key for key, value in activity_options.items() if value == activity_option_value), None)
 
-        if script_type == None or script_type == 'back_to_start':
+        if activity_option_key is None or activity_option_key == 'back_to_start':
             return
+
+        script_type = cast(Literal['selenium', 'playwright', 'other'], activity_option_key)
 
         script_configs_raw = automation_config[script_type]
 
@@ -100,7 +102,7 @@ class AutomationCli(BaseCli):
                                                   headless)
                 logger.success(f'{profile_name} - finished scripts execution')
             except NoFreePortsError as e:
-                logger.erorr(f'{profile_name} - {e}')
+                logger.error(f'{profile_name} - {e}')
             except AutomationError as e:
                 logger.error(f'{profile_name} - {e}')
             except Exception as e:
