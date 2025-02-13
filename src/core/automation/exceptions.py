@@ -1,2 +1,0 @@
-class DebugPortConnectionError(Exception):
-    pass

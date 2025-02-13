@@ -27,7 +27,7 @@ class StartCli(BaseCli):
         },
         'run_scripts': {
             'human_name': '🤖 Execute scripts',
-            'action': lambda: AutomationCli.show()
+            'action': lambda: AutomationCli.start()
         },
         'manage_extensions': {
             'human_name': '🧩 Extensions management',
@@ -51,34 +51,38 @@ class StartCli(BaseCli):
         }
     }
 
+    @classmethod
+    def start(cls):
+        while True:
+            try:
+                selected_option_human_name = questionary.select(
+                    "Choose an action",
+                    choices=[option["human_name"] for option in cls.CLI_OPTIONS.values()],
+                    style=cls.CUSTOM_STYLE
+                ).ask()
+
+                if selected_option_human_name is None:
+                    cls.exit_program()
+
+                selected_option_key = next(
+                    (key for key, value in cls.CLI_OPTIONS.items() if value["human_name"] == selected_option_human_name),
+                    None
+                )
+
+                if not selected_option_key:
+                    cls.exit_program()
+
+                selected_option = cls.CLI_OPTIONS[selected_option_key]
+                if selected_option["action"]:
+                    selected_option["action"]()
+                else:
+                    logger.warning("This feature is not yet implemented")
+
+            except Exception as e:
+                logger.error('Unexpected error')
+                logger.debug(f'Unexpected erorr, reason: {e}')
+
     @staticmethod
     def exit_program():
         logger.info("Exiting the program")
         exit(0)
-
-
-    @classmethod
-    def show(cls):
-        while True:
-            selected_option_human_name = questionary.select(
-                "Choose an action",
-                choices=[option["human_name"] for option in cls.CLI_OPTIONS.values()],
-                style=cls.CUSTOM_STYLE
-            ).ask()
-
-            if selected_option_human_name is None:
-                cls.exit_program()
-
-            selected_option_key = next(
-                (key for key, value in cls.CLI_OPTIONS.items() if value["human_name"] == selected_option_human_name),
-                None
-            )
-
-            if not selected_option_key:
-                cls.exit_program()
-
-            selected_option = cls.CLI_OPTIONS[selected_option_key]
-            if selected_option["action"]:
-                selected_option["action"]()
-            else:
-                logger.warning("This feature is not yet implemented")

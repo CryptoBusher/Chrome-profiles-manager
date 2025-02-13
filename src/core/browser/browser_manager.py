@@ -142,30 +142,29 @@ class BrowserManager:
                        window_geometry: dict | None = None,
                        debug: bool = False,
                        headless: bool = False,
-                       maximized: bool = False) -> Browser | None:
-        try:
-            profile_name = str(profile_name)
-            launch_args, debug_port = self.__create_launch_flags(profile_name,
-                                                                 window_geometry,
-                                                                 debug,
-                                                                 headless,
-                                                                 maximized)
+                       maximized: bool = False) -> Browser:
+        
+        profile_name = str(profile_name)
+        launch_args, debug_port = self.__create_launch_flags(profile_name,
+                                                             window_geometry,
+                                                             debug,
+                                                             headless,
+                                                             maximized)
 
-            with open(os.devnull, 'w') as devnull:  # to avoid Chrome log spam
-                chrome_process = subprocess.Popen([ProjectPaths.chrome_path, *launch_args], stdout=devnull,
-                                                  stderr=devnull)
+        with open(os.devnull, 'w') as devnull:  # to avoid Chrome log spam
+            chrome_process = subprocess.Popen([ProjectPaths.chrome_path, *launch_args],
+                                              stdout=devnull,
+                                              stderr=devnull)
 
-            browser = Browser(
-                profile_name,
-                chrome_process,
-                debug_port
-            )
-            self.active_browsers.append(browser)
+        browser = Browser(
+            profile_name,
+            chrome_process,
+            debug_port
+        )
+        self.active_browsers.append(browser)
 
-            logger.success(f'{profile_name} - {_("profile_launched")}')
-
-            return browser
-
-        except Exception as e:
-            logger.error(f'{profile_name} - {_("failed_to_launch_profile")}')
-            logger.debug(f'{profile_name} - failed to launch profile, reason: {e}', exc_info=True)
+        return browser
+    
+    def kill_browser(self, profile_name: str | int):
+        pass
+        # TODO: implement

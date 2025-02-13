@@ -1,18 +1,20 @@
 from random import shuffle
 
 import toml
-from questionary import select, checkbox
 from loguru import logger
+from questionary import select, checkbox
 
 from .base_cli import BaseCli
 from src.utils.constants import ProjectPaths
 from src.cli.profiles_cli import ProfilesCli
+from src.exceptions import AutomationError
+from src.core.browser.browser_manager import BrowserManager
 from src.core.automation.automation_manager import AutomationManager, ScriptConfig
 
 
 class AutomationCli(BaseCli):
     @classmethod
-    def show(cls):
+    def start(cls):
         automation_config = toml.load(ProjectPaths.automation_path / "config.toml")
 
         activity_options = {
@@ -88,7 +90,15 @@ class AutomationCli(BaseCli):
             if shuffle_scripts:
                 shuffle(selected_script_configs)
 
-            AutomationManager.execute_scripts(profile_name,
-                                              script_type,
-                                              selected_script_configs,
-                                              headless)
+            try:
+                AutomationManager.execute_scripts(profile_name,
+                                                  script_type,
+                                                  selected_script_configs,
+                                                  headless)
+            except AutomationError as e:
+                logger.error(f'{profile_name} - {e}')
+            except Exception as e:
+                logger.error(f'{profile_name} - unexpected bulk scripts execution error')
+                logger.debug(f'{profile_name} - unexpected bulk scripts execution error, reason: {e}', exc_info=True)
+            finally:
+                BrowserManager().kill_browser(profile_name)
