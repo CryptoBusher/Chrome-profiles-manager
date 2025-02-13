@@ -14,46 +14,46 @@ from .settings_cli import SettingsCli
 class StartCli(BaseCli):
     CLI_OPTIONS = {
         'launch_profiles': {
-            'human_name': '🚀 запуск профилей',
+            'human_name': '🚀 Launch profiles',
             'action': lambda: ProfilesCli.launch_profiles()
         },
         'show_profiles': {
-            'human_name': '📖 просмотр профилей',
+            'human_name': '📖 Show profiles',
             'action': lambda: ProfilesCli.show_profiles()
         },
         'set_comments': {
-            'human_name': '📝 задать комментарии',
+            'human_name': '📝 Set comments',
             'action': lambda: ProfilesCli.set_comments()
         },
         'run_scripts': {
-            'human_name': '🤖 прогон скриптов',
+            'human_name': '🤖 Execute scripts',
             'action': lambda: AutomationCli.show()
         },
         'manage_extensions': {
-            'human_name': '🧩 работа с расширениями',
+            'human_name': '🧩 Extensions management',
             'action': lambda: ExtensionsCli.show()
         },
         'create_profiles': {
-            'human_name': '➕ создание профилей',
+            'human_name': '➕ Create profiles',
             'action': lambda: ProfilesCli.create_profiles()
         },
         'kill_chrome_processes': {
-            'human_name': '💀 убить процессы Chrome',
+            'human_name': '💀 Kill Chrome processes',
             'action': lambda: kill_chrome_processes()
         },
         'settings': {
-            'human_name': '🔧 настройки',
+            'human_name': '🔧 Settings',
             'action': lambda: SettingsCli.show()
         },
         'exit': {
-            'human_name': '🚪 выход',
+            'human_name': '🚪 Exit',
             'action': lambda: StartCli.exit_program()
         }
     }
 
     @staticmethod
     def exit_program():
-        logger.info("Выход из программы")
+        logger.info("Exiting the program")
         exit(0)
 
 
@@ -61,7 +61,7 @@ class StartCli(BaseCli):
     def show(cls):
         while True:
             selected_option_human_name = questionary.select(
-                "Выбери действие",
+                "Choose an action",
                 choices=[option["human_name"] for option in cls.CLI_OPTIONS.values()],
                 style=cls.CUSTOM_STYLE
             ).ask()
@@ -81,4 +81,4 @@ class StartCli(BaseCli):
             if selected_option["action"]:
                 selected_option["action"]()
             else:
-                logger.warning("Эта функция пока не реализована.")
+                logger.warning("This feature is not yet implemented")

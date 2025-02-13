@@ -11,14 +11,14 @@ class ExtensionsCli(BaseCli):
     @classmethod
     def show(cls):
         activity_options = {
-            'add_without_replace': '🟢 добавить дефолтные без замены',
-            'add_with_replace': '🔴 добавить дефолтные с заменой',
-            'remove': '❌ удалить расширения',
-            'back_to_start': '🏠 назад в меню'
+            'add_without_replace': '🟢 Add without replacing',
+            'add_with_replace': '🔴 Add with replace',
+            'remove': '🗑 Remove',
+            'back_to_start': '🏠 Back to the main menu'
         }
 
         activity_option_value = questionary.select(
-            "Выбери действие с расширениями",
+            "Choose an action for the extensions",
             choices=list(activity_options.values()),
             style=cls.CUSTOM_STYLE
         ).ask()
@@ -28,10 +28,13 @@ class ExtensionsCli(BaseCli):
 
         activity_option_key = next((key for key, value in activity_options.items() if value == activity_option_value), None)
 
+        if activity_option_key == None or activity_option_key == 'back_to_start':
+            return
+
         selected_profiles = ProfilesCli.select_profiles()
 
         if not selected_profiles:
-            logger.warning("Юзеры не выбраны")
+            logger.warning('No profiles selected')
             return
 
         match activity_option_key:
@@ -52,7 +55,7 @@ class ExtensionsCli(BaseCli):
         default_extensions_info = ExtensionManager.get_all_default_extension_names()
 
         if not default_extensions_info:
-            logger.warning('Дефолтные расширения не найдены')
+            logger.warning('No default extensions found')
             return
 
         choices = [
@@ -61,7 +64,7 @@ class ExtensionsCli(BaseCli):
         ]
 
         selected_extensions = questionary.checkbox(
-            "Выбери расширения",
+            "Choose extensions to add",
             choices=choices,
             style=cls.CUSTOM_STYLE
         ).ask()
@@ -69,7 +72,7 @@ class ExtensionsCli(BaseCli):
         selected_ids = [str(choice.split(" ")[0]) for choice in selected_extensions]
 
         if not selected_ids:
-            logger.warning('Расширения не выбраны')
+            logger.warning('No extensions selected')
             return
 
         for name in profiles_list:
@@ -82,7 +85,7 @@ class ExtensionsCli(BaseCli):
         default_profiles_extension_info = ExtensionManager.get_profiles_extension_names(profiles_list)
 
         if not default_profiles_extension_info:
-            logger.warning('⚠️ Расширения в дефолтных профилях не найдены')
+            logger.warning('No extensions found')
             return
 
         choices = [
@@ -91,7 +94,7 @@ class ExtensionsCli(BaseCli):
         ]
 
         selected_extensions = questionary.checkbox(
-            "Выбери расширения",
+            "Choose extensions to remove",
             choices=choices,
             style=cls.CUSTOM_STYLE
         ).ask()
@@ -99,7 +102,7 @@ class ExtensionsCli(BaseCli):
         selected_ids = [choice.split(" ")[0] for choice in selected_extensions]
 
         if not selected_ids:
-            logger.warning('⚠️ Расширения не выбраны')
+            logger.warning('No extensions selected')
             return
 
         for name in profiles_list:

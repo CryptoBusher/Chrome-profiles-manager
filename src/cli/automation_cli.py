@@ -1,7 +1,7 @@
 from random import shuffle
 
 import toml
-import questionary
+from questionary import select, checkbox
 from loguru import logger
 
 from .base_cli import BaseCli
@@ -16,14 +16,14 @@ class AutomationCli(BaseCli):
         automation_config = toml.load(ProjectPaths.automation_path / "config.toml")
 
         activity_options = {
-            'selenium': 'selenium скрипты',
-            'playwright': 'playwright скрипты',
-            'other': 'другие скрипты',
-            'back_to_start': '🏠 назад в меню'
+            'selenium': '🤖 Selenium scripts',
+            'playwright': '🤖 Playwright scripts',
+            'other': '🤖 Other scripts',
+            'back_to_start': '🏠 Back to the main menu'
         }
 
-        activity_option_value = questionary.select(
-            "Выбери тип скриптов",
+        activity_option_value = select(
+            "Select scripts type",
             choices=list(activity_options.values()),
             style=cls.CUSTOM_STYLE
         ).ask()
@@ -32,11 +32,15 @@ class AutomationCli(BaseCli):
             return
 
         script_type = next((key for key, value in activity_options.items() if value == activity_option_value), None)
+
+        if script_type == None or script_type == 'back_to_start':
+            return
+
         script_configs_raw = automation_config[script_type]
 
-        selected_script_human_names = questionary.checkbox(
-            "Выбери скрипты для выполнения",
-            choices=list([config['human_name'] for config in script_configs]),
+        selected_script_human_names = checkbox(
+            "Select scripts to execute",
+            choices=list([config['human_name'] for config in script_configs_raw]),
             style=cls.CUSTOM_STYLE
         ).ask()
  
@@ -53,24 +57,24 @@ class AutomationCli(BaseCli):
 
         selected_profiles = ProfilesCli.select_profiles()
 
-        shuffle_profiles_choice = questionary.select(
-            "Рандомизировать порядок профилей?",
+        shuffle_profiles_choice = select(
+            "Shuffle profiles?",
             choices=[so[1] for so in cls.BOOL_OPTIONS],
             style=cls.CUSTOM_STYLE
         ).ask()
         
         shuffle_profiles = next(so[0] for so in cls.BOOL_OPTIONS if so[1] == shuffle_profiles_choice)
 
-        shuffle_scripts_choice = questionary.select(
-            "Рандомизировать порядок скриптов?",
+        shuffle_scripts_choice = select(
+            "Shuffle scripts?",
             choices=[so[1] for so in cls.BOOL_OPTIONS],
             style=cls.CUSTOM_STYLE
         ).ask()
 
         shuffle_scripts = next(so[0] for so in cls.BOOL_OPTIONS if so[1] == shuffle_scripts_choice)
 
-        headless_choice = questionary.select(
-            "Использовать режим headless?",
+        headless_choice = select(
+            "Use headless mode?",
             choices=[so[1] for so in cls.BOOL_OPTIONS],
             style=cls.CUSTOM_STYLE
         ).ask()

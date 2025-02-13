@@ -21,9 +21,9 @@ class SettingsCLI(BaseCli):
     @classmethod
     def _select_group(cls):
         groups = {
-            'general': 'general Settings',
-            'browser': 'browser Settings',
-            'back': '🏠 back to main menu'
+            'general': '🗂 General settings',
+            'browser': '🗂 Browser settings',
+            'back': '🏠 Back to the main menu'
         }
         
         choice = select(

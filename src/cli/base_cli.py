@@ -12,8 +12,8 @@ class BaseCli:
     ])
     
     BOOL_OPTIONS = [
-        (True, 'Да'),
-        (False, 'Нет')
+        (True, '✅ Yes'),
+        (False, '❌ No')
     ]
 
     @classmethod
@@ -28,7 +28,7 @@ class BaseCli:
             page_items = items[start:end]
 
             selected_items_on_page = questionary.checkbox(
-                f"Выбери {item_name} (страница {current_page + 1} из {total_pages})",
+                f"Choose {item_name} (page {current_page + 1} of {total_pages})",
                 choices=page_items,
                 style=cls.CUSTOM_STYLE,
             ).ask()
