@@ -3,7 +3,11 @@ from sys import exit
 import questionary
 from loguru import logger
 
-from src.cli import BaseCli, ProfilesCli, ExtensionsCli, AutomationCli, SettingsCli
+from .base_cli import BaseCli
+from .profiles_cli import ProfilesCli
+from .extensions_cli import ExtensionsCli
+from .automation_cli import AutomationCli
+from .settings_cli import SettingsCli
 from src.utils.helpers import kill_chrome_processes
 
 

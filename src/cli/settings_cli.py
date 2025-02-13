@@ -1,7 +1,7 @@
 from loguru import logger
 from questionary import select, text, confirm
 
-from src.cli import BaseCli
+from .base_cli import BaseCli
 from src.core import SettingsManager, ParamType
 
 

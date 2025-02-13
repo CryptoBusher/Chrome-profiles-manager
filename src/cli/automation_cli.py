@@ -5,7 +5,8 @@ import toml
 from loguru import logger
 from questionary import select, checkbox
 
-from src.cli import ProfilesCli, BaseCli
+from .profiles_cli import ProfilesCli
+from .base_cli import BaseCli
 from src.core import AutomationManager, ScriptConfig, BrowserManager
 from src.utils.constants import ProjectPaths
 from src.exceptions import AutomationError, NoFreePortsError

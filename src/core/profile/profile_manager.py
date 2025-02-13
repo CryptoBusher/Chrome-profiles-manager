@@ -8,7 +8,7 @@ from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError
 
 
 class ProfileManager:
-    COMMENTS_FILE_PATH = ProjectPaths.profiles_data_path / "comments_for_users.json"
+    COMMENTS_FILE_PATH = ProjectPaths.profiles_data_path / "comments.json"
 
     @staticmethod
     def sort_profiles(profiles_list: list[str]) -> list[str]:

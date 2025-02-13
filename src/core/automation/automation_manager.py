@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-from src.core import BrowserManager, Browser, Chromium
+from src.core.browser.browser_manager import BrowserManager, Browser, Chromium
 from src.utils.constants import ProjectPaths
 from src.exceptions import AutomationError
 

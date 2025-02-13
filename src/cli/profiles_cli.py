@@ -5,7 +5,7 @@ from questionary import select, text
 from rich.console import Console
 from loguru import logger
 
-from src.cli import BaseCli
+from .base_cli import BaseCli
 from src.core import SettingsManager, BrowserManager, ProfileManager
 from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError, NoFreePortsError
 

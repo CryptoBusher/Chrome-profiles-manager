@@ -1,7 +1,8 @@
 import questionary
 from loguru import logger
 
-from src.cli import BaseCli, ProfilesCli
+from .base_cli import BaseCli
+from .profiles_cli import ProfilesCli
 from src.core import ExtensionManager
 from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 
