@@ -1,4 +1,3 @@
-import toml
 from pathlib import Path
 import importlib.util
 from typing import Literal
@@ -10,7 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
 from src.utils.constants import ProjectPaths
-from src.core.browser.browser_manager import BrowserManager, Browser
+from src.core.browser.browser_manager import BrowserManager, Browser, Chromium
 from src.exceptions import AutomationError
 
 
@@ -75,16 +74,16 @@ class AutomationManager:
                                                   maximized=True)
 
         driver = cls.__establish_debug_port_connection(browser)
+        BrowserManager().active_chromedrivers.append(Chromium(profile_name, driver))
 
         for script_config in script_configs:
             try:
-                logger.info(f'{profile_name} - launching script "{script_config.human_name}"')
                 cls.__run_script(profile_name, script_config, driver)
+                logger.success(f'{profile_name} - executed script "{script_config.human_name}"')
             except FileNotFoundError as e:
                 logger.error(f'{profile_name} - {e}')
             except AutomationError as e:
                 logger.error(f'{profile_name} - {e}')
             except Exception as e:
                 logger.error(f'{profile_name} - unexpected script "{script_config.human_name}" execution error')
-                logger.debug(f'{profile_name} - unexpected script "{script_config.human_name}" execution error: {e}', exc_info=True)
-
+                logger.bind(exception=True).debug(f'{profile_name} - unexpected script "{script_config.human_name}" execution error, reason: {e}')

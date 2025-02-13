@@ -1,4 +1,4 @@
-from sys import stderr, exit
+from sys import exit
 
 import questionary
 from loguru import logger
@@ -80,7 +80,7 @@ class StartCli(BaseCli):
 
             except Exception as e:
                 logger.error('Unexpected error')
-                logger.debug(f'Unexpected erorr, reason: {e}')
+                logger.bind(exception=True).debug(f'Unexpected erorr, reason: {e}')
 
     @staticmethod
     def exit_program():

@@ -60,7 +60,7 @@ def setup_data_folder():
             directory.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             logger.error(f"Failed to create directory {directory}")
-            logger.debug(f"Failed to create directory {directory}: {str(e)}")
+            logger.bind(exception=True).debug(f"Failed to create directory {directory}, reason: {e}")
             raise
 
     app_settings_path = data_path / 'app_data' / 'settings.toml'

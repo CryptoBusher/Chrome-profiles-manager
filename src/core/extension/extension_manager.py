@@ -3,8 +3,7 @@ import json
 import shutil
 from pathlib import Path
 
-from loguru import logger
-
+from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 from src.utils.constants import ProjectPaths
 
 
@@ -71,29 +70,7 @@ class ExtensionManager:
                             extensions_info[extension.name] = ''  # because there is no manifest file
 
         return extensions_info
-
-    @classmethod
-    def remove_extension_from_profile(cls, profile_name: str | int, ext_id: str) -> None:
-        profile_path = ProjectPaths.profiles_path  / str(profile_name) / "Default"
-        profile_extension_path = profile_path / "Extensions" / ext_id
-        profile_extension_settings_path = profile_path / "Local Extension Settings" / ext_id
-
-        if profile_extension_path.is_dir():
-            try:
-                shutil.rmtree(profile_extension_path)
-                logger.success(f"{profile_name} - {_("removed_extension")} {ext_id}")
-            except Exception as e:
-                logger.error(f"{profile_name} - {_("failed_to_remove_extension")} {ext_id}")
-                logger.debug(f"{profile_name} - failed to remove extension {ext_id}, reason: {e}", exc_info=True)
-
-        if profile_extension_settings_path.is_dir():
-            try:
-                shutil.rmtree(profile_extension_settings_path)
-                logger.success(f"{profile_name} - {_("removed_settings_for_extension")} {ext_id}")
-            except Exception as e:
-                logger.error(f"{profile_name} - {_("failed_to_remove_settings_for_extension")} {ext_id}")
-                logger.debug(f"{profile_name} - failed to remove settings for extension {ext_id}, reason: {e}", exc_info=True)
-
+    
     @classmethod
     def add_extension_to_profile(cls, profile_name: str | int, ext_id: str, replace: bool = False) -> None:
         profile_name = str(profile_name)
@@ -102,18 +79,30 @@ class ExtensionManager:
         destination_path = profile_path / "Extensions" / ext_id
 
         if not source_path.is_dir():
-            logger.error(f'{profile_name} - {_("missing_extension_in_default_extensions_path").format(ext_id=ext_id)}')
-            return
+            raise ExtensionNotFoundError(ext_id)
 
         if replace:
             cls.remove_extension_from_profile(profile_name, ext_id)
 
         if destination_path.is_dir():
-            return
+            raise ExtensionAlreadyInstalledError()
 
-        try:
-            shutil.copytree(source_path, destination_path)
-            logger.success(f"{profile_name} - {_("added_extension")} {ext_id}")
-        except Exception as e:
-            logger.error(f"{profile_name} - {_("failed_to_add_extension")} {ext_id}")
-            logger.debug(f"{profile_name} - failed to add extension {ext_id}, reason: {e}", exc_info=True)
+        shutil.copytree(source_path, destination_path)
+
+    @classmethod
+    def remove_extension_from_profile(cls, profile_name: str | int, ext_id: str) -> None:
+        profile_path = ProjectPaths.profiles_path  / str(profile_name) / "Default"
+        profile_extension_path = profile_path / "Extensions" / ext_id
+        profile_extension_settings_path = profile_path / "Local Extension Settings" / ext_id
+
+        extension_found = False
+
+        if profile_extension_path.is_dir():
+            shutil.rmtree(profile_extension_path)
+            extension_found = True
+
+        if profile_extension_settings_path.is_dir():
+            shutil.rmtree(profile_extension_settings_path)
+
+        if not extension_found:
+            raise ExtensionNotFoundError(ext_id)

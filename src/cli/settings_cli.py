@@ -1,5 +1,3 @@
-from random import shuffle
-
 from loguru import logger
 from questionary import select, text, confirm
 
@@ -71,7 +69,7 @@ class SettingsCLI(BaseCli):
                 logger.success(f"Successfully updated {param.name}!")
             except Exception as e:
                 logger.error(f"Error updating {param.name}")
-                logger.debug(f"Error updating {param.name}: {str(e)}")
+                logger.bind(exception=True).debug(f"Error updating {param.name}, reason: {e}")
 
     @classmethod
     def _ask_param_value(cls, param, current_value):

@@ -9,7 +9,7 @@ from src.utils.constants import ProjectPaths
 from src.cli.profiles_cli import ProfilesCli
 from src.exceptions import AutomationError
 from src.core.browser.browser_manager import BrowserManager
-from src.core.automation.automation_manager import AutomationManager, ScriptConfig
+from src.core.automation.automation_manager import AutomationManager, ScriptConfig, NoFreePortsError
 
 
 class AutomationCli(BaseCli):
@@ -58,6 +58,9 @@ class AutomationCli(BaseCli):
         ]
 
         selected_profiles = ProfilesCli.select_profiles()
+        if not selected_profiles:
+            logger.warning('No profiles selected')
+            return
 
         shuffle_profiles_choice = select(
             "Shuffle profiles?",
@@ -95,10 +98,13 @@ class AutomationCli(BaseCli):
                                                   script_type,
                                                   selected_script_configs,
                                                   headless)
+                logger.success(f'{profile_name} - finished scripts execution')
+            except NoFreePortsError as e:
+                logger.erorr(f'{profile_name} - {e}')
             except AutomationError as e:
                 logger.error(f'{profile_name} - {e}')
             except Exception as e:
                 logger.error(f'{profile_name} - unexpected bulk scripts execution error')
-                logger.debug(f'{profile_name} - unexpected bulk scripts execution error, reason: {e}', exc_info=True)
+                logger.bind(exception=True).debug(f'{profile_name} - unexpected bulk scripts execution error, reason: {e}')
             finally:
                 BrowserManager().kill_browser(profile_name)

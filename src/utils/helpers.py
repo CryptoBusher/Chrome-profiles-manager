@@ -1,8 +1,5 @@
 import os
-import json
-import shutil
 import sys
-import math
 
 from loguru import logger
 
@@ -15,10 +12,7 @@ def kill_chrome_processes() -> None:
             os.system('taskkill /F /IM chrome.exe')
         else:
             os.system('pkill chrome')
-        logger.info(f'✅  Все процессы Chrome завершены')
+        logger.success(f'Killed all chrome processes')
     except Exception as e:
-        logger.error(f'⛔  Не удалоcь завершить процессы Chrome')
-        logger.error(f'⛔  Не удалоcь завершить процессы Chrome, причина: {e}')
-
-
-
+        logger.error(f'Failed to kill all chrome processes')
+        logger.bind(exception=True).debug(f'Failed to kill all chrome processes, reason: {e}')

@@ -2,7 +2,7 @@ import questionary
 from loguru import logger
 
 from .base_cli import BaseCli
-from src.utils.constants import ProjectPaths
+from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 from src.cli.profiles_cli import ProfilesCli
 from src.core.extension.extension_manager import ExtensionManager
 
@@ -32,7 +32,6 @@ class ExtensionsCli(BaseCli):
             return
 
         selected_profiles = ProfilesCli.select_profiles()
-
         if not selected_profiles:
             logger.warning('No profiles selected')
             return
@@ -46,9 +45,6 @@ class ExtensionsCli(BaseCli):
 
             case 'remove':
                 cls.remove_extensions_menu(selected_profiles)
-
-            case 'back_to_start':
-                return
 
     @classmethod
     def add_default_extensions(cls, profiles_list: list[str | int], replace: bool = False) -> None:
@@ -75,10 +71,18 @@ class ExtensionsCli(BaseCli):
             logger.warning('No extensions selected')
             return
 
-        for name in profiles_list:
-            name = str(name)
+        for profile_name in profiles_list:
             for ext_id in selected_ids:
-                ExtensionManager.add_extension_to_profile(name, ext_id, replace)
+                try:
+                    ExtensionManager.add_extension_to_profile(profile_name, ext_id, replace)
+                    logger.success(f'{profile_name} - installed extension {ext_id}')
+                except ExtensionAlreadyInstalledError:
+                    logger.info(f'{profile_name} - extension {ext_id} already installed')
+                except ExtensionNotFoundError:
+                    logger.error(f'{profile_name} - extension {ext_id} not found in default extensions folder')
+                except Exception as e:
+                    logger.error(f'{profile_name} - unexpected error during adding an extension {ext_id}')
+                    logger.bind(exception=True).debug(f'{profile_name} - unexpected error during adding an extension {ext_id}, reason: {e}')
 
     @classmethod
     def remove_extensions_menu(cls, profiles_list: list[str | int]) -> None:
@@ -105,6 +109,13 @@ class ExtensionsCli(BaseCli):
             logger.warning('No extensions selected')
             return
 
-        for name in profiles_list:
+        for profile_name in profiles_list:
             for ext_id in selected_ids:
-                ExtensionManager.remove_extension_from_profile(name, ext_id)
+                try:
+                    ExtensionManager.remove_extension_from_profile(profile_name, ext_id)
+                    logger.success(f'{profile_name} - extension {ext_id} removed')
+                except ExtensionNotFoundError:
+                    pass
+                except Exception as e:
+                    logger.error(f'{profile_name} - unexpected error during removing an extension {ext_id}')
+                    logger.bind(exception=True).debug(f'{profile_name} - unexpected error during removing an extension {ext_id}, reason: {e}')

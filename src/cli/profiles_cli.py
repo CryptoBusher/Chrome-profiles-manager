@@ -3,9 +3,10 @@ from time import sleep
 
 from questionary import select, text
 from loguru import logger
+from rich.console import Console
 
 from .base_cli import BaseCli
-from src.utils.constants import ProjectPaths
+from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError, NoFreePortsError
 from src.core.settings.settings_manager import SettingsManager
 from src.core.browser.browser_manager import BrowserManager
 from src.core.profile.profile_manager import ProfileManager
@@ -78,7 +79,6 @@ class ProfilesCli(BaseCli):
 
 
         if not selected_profiles:
-            logger.warning('No profiles selected')
             return
 
         selected_profiles = ProfileManager.sort_profiles(selected_profiles)
@@ -103,6 +103,9 @@ class ProfilesCli(BaseCli):
             return
 
         create_method_key = next((key for key, value in create_methods.items() if value == create_method_value), None)
+
+        if create_method_key == None or create_method_key == 'back_to_start':
+            return
 
         profiles_to_create = []
         match create_method_key:
@@ -131,23 +134,26 @@ class ProfilesCli(BaseCli):
                 try:
                     amount = int(amount)
                 except ValueError:
-                    logger.warning('Wrong amount')
+                    logger.error('Wrong amount')
                     return
 
                 highest_existing_numeric_name = ProfileManager.get_highest_numeric_profile_name()
                 start = highest_existing_numeric_name + 1
                 profiles_to_create = list(range(start, start + amount))
 
-            case 'back_to_start':
-                return
-
-        for name in profiles_to_create:
-            ProfileManager.create_profile(name)
+        for profile_name in profiles_to_create:
+            try:
+                ProfileManager.create_profile(profile_name)
+                logger.success(f'{profile_name} - created profile')
+            except ProfileAlreadyExistsError:
+                logger.error(f'{profile_name} - profile already exists')
+            except Exception as e:
+                logger.error(f'{profile_name} - unexpected error during creating profile')
+                logger.bind(exception=True).debug(f'{profile_name} - unexpected error during creating profile, reason: {e}')
 
     @classmethod
     def launch_profiles(cls):
         selected_profiles = cls.select_profiles()
-
         if not selected_profiles:
             logger.warning('No profiles selected')
             return
@@ -155,28 +161,42 @@ class ProfilesCli(BaseCli):
         if SettingsManager.get_settings()['browser']['reverse_launch_order']:
             selected_profiles = selected_profiles[::-1]
 
-        for i, name in enumerate(selected_profiles):
-            window_geometry = BrowserManager.calculate_window_geometry(len(selected_profiles),
-                                                                       i,
-                                                                       SettingsManager.get_settings['browser']['working_area_width_px'],
-                                                                       SettingsManager.get_settings['browser']['working_area_height_px'])
-            BrowserManager().launch_browser(profile_name=name,
-                                            window_geometry=window_geometry,
-                                            debug=False,
-                                            headless=False,
-                                            maximized=False)
+        for i, profile_name in enumerate(selected_profiles):
+            try:
+                window_geometry = BrowserManager.calculate_window_geometry(len(selected_profiles),
+                                                                        i,
+                                                                        SettingsManager.get_settings['browser']['working_area_width_px'],
+                                                                        SettingsManager.get_settings['browser']['working_area_height_px'])
+                BrowserManager().launch_browser(profile_name=profile_name,
+                                                window_geometry=window_geometry,
+                                                debug=False,
+                                                headless=False,
+                                                maximized=False)
 
-            sleep(SettingsManager.get_settings()['browser']['launch_delay_sec'])
+                logger.success(f'{profile_name} - profile launched')
+                sleep(SettingsManager.get_settings()['browser']['launch_delay_sec'])
+            except NoFreePortsError as e:
+                logger.erorr(f'{profile_name} - {e}')
+            except Exception as e:
+                logger.error(f'{profile_name} - unexpected error during launching profile')
+                logger.bind(exception=True).debug(f'{profile_name} - unexpected error during launching profile, reason: {e}')
 
-    @classmethod
-    def show_profiles(cls):
-        profiles_table = ProfileManager.get_profiles_table()
-        print(profiles_table)
+
+    @staticmethod
+    def show_profiles():
+        try:
+            profiles_table = ProfileManager.get_profiles_table()
+            console = Console()
+            console.print(profiles_table)
+        except ProfilesNotFoundError:
+            logger.error('No profiles found')
+        except Exception as e:
+            logger.error('Unexpected error during showing profiles')
+            logger.bind(exception=True).debug(f'Unexpected error during showing profiles, reason: {e}')
 
     @classmethod
     def set_comments(cls):
         selected_profiles = cls.select_profiles()
-
         if not selected_profiles:
             logger.warning('No profiles selected')
             return
@@ -187,7 +207,13 @@ class ProfilesCli(BaseCli):
         ).ask()
 
         if new_comment is None:
+            logger.warning('No comment provided')
             return
 
-        for name in selected_profiles:
-            ProfileManager.set_profile_comment(name, new_comment)
+        for profile_name in selected_profiles:
+            try:
+                ProfileManager.set_profile_comment(profile_name, new_comment)
+                logger.success(f'{profile_name} - comment set')
+            except Exception as e:
+                logger.error(f'{profile_name} - unexpected error during setting profile comment')
+                logger.bind(exception=True).debug(f'{profile_name} - unexpected error during setting profile comment, reason: {e}')

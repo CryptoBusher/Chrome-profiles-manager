@@ -4,9 +4,7 @@ import shutil
 from pathlib import Path
 
 from rich.table import Table
-from rich.console import Console
-from loguru import logger
-
+from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError
 from src.utils.constants import ProjectPaths
 
 
@@ -79,13 +77,11 @@ class ProfileManager:
         profiles_list = cls.get_sorted_profiles_list()
 
         if not profiles_list:
-            logger.error("Юзеры отсутствуют")
-            return
+            raise ProfilesNotFoundError()
 
-        console = Console()
         table = Table(style="cyan")
-        table.add_column("Название", style="magenta")
-        table.add_column("Комментарии", style="green")
+        table.add_column("Name", style="magenta")
+        table.add_column("Comment", style="green")
 
         for profile_name in profiles_list:
             comment = cls.get_profile_comment(profile_name)
@@ -111,4 +107,10 @@ class ProfileManager:
     @classmethod
     def create_profile(cls, profile_name: str | int) -> None:
         profile_name = str(profile_name)
-        pass
+        profile_path = ProjectPaths.profiles_path / profile_name
+
+        if profile_path.exists():
+            os.makedirs(profile_path / "Default" / "Extensions", exist_ok=True)  # In case  structure is missing
+            raise ProfileAlreadyExistsError()
+
+        os.makedirs(profile_path / "Default" / "Extensions")

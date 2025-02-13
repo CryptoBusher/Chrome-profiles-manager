@@ -5,8 +5,9 @@ import subprocess
 from pathlib import Path
 from dataclasses import dataclass
 
-from loguru import logger
+from selenium import webdriver
 
+from src.exceptions import NoFreePortsError
 from src.utils.constants import ProjectPaths
 from src.core.profile.profile_manager import ProfileManager
 
@@ -17,20 +18,27 @@ class Browser:
     process: subprocess.Popen[bytes]
     debug_port: int | None = None
 
+@dataclass
+class Chromium:
+    profile_name: str
+    driver: webdriver.Chrome
+
 
 class BrowserManager:
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance") or cls._instance is None:
+        if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, 'initialized'):
+        if not self._initialized:
             self.active_browsers: list[Browser] = []
+            self.active_chromedrivers: list[Chromium] = []
             self.busy_debug_ports: list[int] = []
-            self.initialized = True
+            self.__class__._initialized = True
 
     def __create_launch_flags(self,
                               profile_name: str | int,
@@ -76,15 +84,15 @@ class BrowserManager:
 
         debug_port = None
         if debug:
-            debug_port = self.__find_free_port()
+            debug_port = self.__select_free_port()
             if not debug_port:
-                raise Exception(_("missing_free_ports"))
+                raise NoFreePortsError()
 
             flags.append(f'--remote-debugging-port={debug_port}')
 
         return flags, debug_port
 
-    def __find_free_port(self, start_port=9222, max_port=9300) -> int | None:
+    def __select_free_port(self, start_port=9222, max_port=9300) -> int | None:
         for port in range(start_port, max_port):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 result = s.connect_ex(('127.0.0.1', port))
@@ -134,8 +142,11 @@ class BrowserManager:
 
         return all_window_positions[window_index]
 
-    def get_browser(self, profile_name: str | int) -> Browser | None:
+    def __get_browser(self, profile_name: str | int) -> Browser | None:
         return next((b for b in self.active_browsers if b.profile_name == profile_name), None)
+    
+    def __get_chromium(self, profile_name: str | int) -> Chromium | None:
+        return next((c for c in self.active_chromedrivers if c.profile_name == profile_name), None)
 
     def launch_browser(self,
                        profile_name: str | int,
@@ -166,5 +177,24 @@ class BrowserManager:
         return browser
     
     def kill_browser(self, profile_name: str | int):
-        pass
-        # TODO: implement
+        profile_name = str(profile_name)
+        browser = self.__get_browser(profile_name)
+        chromium = self.__get_chromium(profile_name)
+
+        if chromium:
+            if chromium.driver:
+                chromium.driver.close()
+                chromium.driver.quit()
+                
+            self.active_chromedrivers = [c for c in self.active_chromedrivers if c.profile_name != profile_name]
+
+        if browser:
+            port_used = browser.debug_port
+            if browser.process:
+                browser.process.terminate()
+                browser.process.wait()
+
+            self.active_browsers = [b for b in self.active_browsers if b.profile_name != profile_name]
+
+            if port_used in  self.busy_debug_ports:
+                self.busy_debug_ports.remove(port_used)
