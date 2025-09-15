@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+from loguru import logger
+
 from src.utils.constants import ProjectPaths
 from src.exceptions import ExtensionNotFoundError, ExtensionAlreadyInstalledError
 
@@ -81,7 +83,7 @@ class ExtensionManager:
             raise ExtensionNotFoundError(ext_id)
 
         if replace:
-            cls.remove_extension_from_profile(profile_name, ext_id)
+            cls.remove_extension_from_profile(profile_name, ext_id, True)
 
         if destination_path.is_dir():
             raise ExtensionAlreadyInstalledError()
@@ -89,7 +91,7 @@ class ExtensionManager:
         shutil.copytree(source_path, destination_path)
 
     @classmethod
-    def remove_extension_from_profile(cls, profile_name: str | int, ext_id: str) -> None:
+    def remove_extension_from_profile(cls, profile_name: str | int, ext_id: str, missing_ok: bool = False) -> None:
         profile_path = ProjectPaths.profiles_path  / str(profile_name) / "Default"
         profile_extension_path = profile_path / "Extensions" / ext_id
         profile_extension_settings_path = profile_path / "Local Extension Settings" / ext_id
@@ -103,5 +105,5 @@ class ExtensionManager:
         if profile_extension_settings_path.is_dir():
             shutil.rmtree(profile_extension_settings_path)
 
-        if not extension_found:
+        if not extension_found and not missing_ok:
             raise ExtensionNotFoundError(ext_id)

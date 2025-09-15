@@ -21,3 +21,7 @@ class ProfileAlreadyExistsError(Exception):
 class NoFreePortsError(Exception):
     def __init__(self, message="no free ports available"):
         super().__init__(message)
+
+
+class CliError(Exception):
+    pass

@@ -13,8 +13,8 @@ class ExtensionsCli(BaseCli):
         activity_options = {
             'add_without_replace': '🟢 Add without replacing',
             'add_with_replace': '🔴 Add with replace',
-            'remove': '🗑 Remove',
-            'back_to_start': '🏠 Back to the main menu'
+            'remove': '❌ Remove',
+            'back': '👈 Back'
         }
 
         activity_option_value = questionary.select(
@@ -28,12 +28,11 @@ class ExtensionsCli(BaseCli):
 
         activity_option_key = next((key for key, value in activity_options.items() if value == activity_option_value), None)
 
-        if activity_option_key is None or activity_option_key == 'back_to_start':
+        if activity_option_key is None or activity_option_key == 'back':
             return
 
         selected_profiles = ProfilesCli.select_profiles()
         if not selected_profiles:
-            logger.warning('No profiles selected')
             return
 
         match activity_option_key:

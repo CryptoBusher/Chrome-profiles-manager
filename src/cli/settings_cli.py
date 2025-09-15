@@ -10,7 +10,7 @@ class SettingsCli(BaseCli):
     def start(cls):
         while True:
             group = cls._select_group()
-            if not group:
+            if not group or group == 'back':
                 return
             
             cls._handle_group(group)
@@ -20,7 +20,7 @@ class SettingsCli(BaseCli):
         groups = {
             'general': '🗂 General settings',
             'browser': '🗂 Browser settings',
-            'back': '🏠 Back to the main menu'
+            'back': '👈 Back'
         }
         
         choice = select(
@@ -35,25 +35,32 @@ class SettingsCli(BaseCli):
     def _handle_group(cls, group: str):
         while True:
             param = cls._select_param(group)
-            if not param:
-                break
+            if not param or param == 'back':
+                return
             
             cls._edit_param(group, param)
 
     @classmethod
     def _select_param(cls, group: str):
         params = SettingsManager.get_meta(group)
-        choices = [
-            {
-                'name': f"{p.name} ({SettingsManager.get_value(group, p.key)})", 
-                'value': p
-            } for p in params
-        ]
-        choices.append({'name': 'back', 'value': None})
+        choices = {
+            param.key: param.name for param in params
+        }
+        choices['back'] = '👈 Back'
+
+
+
+        # choices = [
+        #     {
+        #         'name': f"{p.name} ({SettingsManager.get_value(group, p.key)})", 
+        #         'value': p
+        #     } for p in params
+        # ]
+        # choices.append({'name': 'back', 'value': None})
         
         return select(
             f"Select parameter to edit in {group}:",
-            choices=choices,
+            choices=choices.values(),
             style=cls.CUSTOM_STYLE
         ).ask()
 

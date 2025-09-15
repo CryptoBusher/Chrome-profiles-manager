@@ -7,7 +7,7 @@ from loguru import logger
 
 from .base_cli import BaseCli
 from src.core import SettingsManager, BrowserManager, ProfileManager
-from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError, NoFreePortsError
+from src.exceptions import ProfilesNotFoundError, ProfileAlreadyExistsError, NoFreePortsError, CliError
 
 
 class ProfilesCli(BaseCli):
@@ -21,10 +21,10 @@ class ProfilesCli(BaseCli):
 
         select_options = {
             'select_from_list': '📋 Select from the list',
-            'enter_names': '📝 Enter names',
             'select_by_comment': '📒 Select by a comment',
+            'enter_names': '📝 Enter names',
             'select_all': '📦 Select all',
-            'back_to_start': '🏠 Back to the main menu'
+            'back': '👈 Back'
         }
 
         select_method_value = select(
@@ -34,11 +34,15 @@ class ProfilesCli(BaseCli):
         ).ask()
 
         if select_method_value is None:
+            logger.warning("Method for selecting profiles is not provided")
             return
 
         select_method_key = next((key for key, value in select_options.items() if value == select_method_value), None)
 
-        if select_method_key is None or select_method_key == 'back_to_start':
+        if select_method_key is None:
+            raise CliError(f'Missing key for value "{select_method_value}"')
+
+        if select_method_key == 'back':
             return
 
         selected_profiles = []
@@ -69,7 +73,7 @@ class ProfilesCli(BaseCli):
 
                 for profile_name in profiles_list:
                     comment = ProfileManager.get_profile_comment(profile_name)
-                    if comment_substring.lower() in comment.lower:
+                    if comment_substring.lower() in comment.lower():
                         selected_profiles.append(profile_name)
 
             case 'select_all':
@@ -77,6 +81,7 @@ class ProfilesCli(BaseCli):
 
 
         if not selected_profiles:
+            logger.warning("No profiles selected")
             return
 
         selected_profiles = ProfileManager.sort_profiles(selected_profiles)
@@ -88,7 +93,7 @@ class ProfilesCli(BaseCli):
         create_methods = {
             'manual': '📝 Manual entry',
             'auto': '🤖 Automatic entry',
-            'back_to_start': '🏠 Back to the main menu'
+            'back': '👈 Back'
         }
 
         create_method_value = select(
@@ -102,7 +107,7 @@ class ProfilesCli(BaseCli):
 
         create_method_key = next((key for key, value in create_methods.items() if value == create_method_value), None)
 
-        if create_method_key is None or create_method_key == 'back_to_start':
+        if create_method_key is None or create_method_key == 'back':
             return
 
         profiles_to_create = []
@@ -153,7 +158,6 @@ class ProfilesCli(BaseCli):
     def launch_profiles(cls):
         selected_profiles = cls.select_profiles()
         if not selected_profiles:
-            logger.warning('No profiles selected')
             return
         
         if SettingsManager.get_settings()['browser']['reverse_launch_order']:
@@ -196,11 +200,10 @@ class ProfilesCli(BaseCli):
     def set_comments(cls):
         selected_profiles = cls.select_profiles()
         if not selected_profiles:
-            logger.warning('No profiles selected')
             return
 
         new_comment = text(
-            "Enter comments\n",
+            "Enter comment\n",
             style=cls.CUSTOM_STYLE
         ).ask()
 
